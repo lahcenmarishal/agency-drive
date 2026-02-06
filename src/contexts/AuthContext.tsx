@@ -51,17 +51,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(profileData);
       }
 
-      // Fetch role - use maybeSingle to avoid 406 errors
-      const { data: roleData, error: roleError } = await supabase
+      // Fetch roles (can be multiple rows) and resolve precedence
+      const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .eq("user_id", userId);
 
-      if (roleError) {
-        console.error("Error fetching role:", roleError);
-      } else if (roleData) {
-        setRole(roleData.role as AppRole);
+      if (rolesError) {
+        console.error("Error fetching role:", rolesError);
+      } else if (rolesData && rolesData.length > 0) {
+        const roles = rolesData.map((r) => r.role as AppRole);
+        const resolvedRole: AppRole = roles.includes("super_admin")
+          ? "super_admin"
+          : roles.includes("admin")
+            ? "admin"
+            : "agent";
+        setRole(resolvedRole);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);

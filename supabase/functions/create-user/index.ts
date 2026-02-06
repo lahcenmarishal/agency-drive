@@ -142,28 +142,39 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update user role
-    const { error: roleError } = await supabaseAdmin
+    // Ensure exactly one role row for the user
+    const { error: deleteRolesError } = await supabaseAdmin
       .from("user_roles")
-      .update({ role })
+      .delete()
       .eq("user_id", newUser.user.id);
 
-    if (roleError) {
-      console.error("Error updating role:", roleError);
+    if (deleteRolesError) {
+      console.error("Error cleaning existing roles:", deleteRolesError);
     }
 
-    // Update profile with agency_id
-    const { error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .update({ 
-        full_name, 
-        email, 
-        agency_id 
-      })
-      .eq("user_id", newUser.user.id);
+    const { error: roleInsertError } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: newUser.user.id, role });
 
-    if (profileError) {
-      console.error("Error updating profile:", profileError);
+    if (roleInsertError) {
+      console.error("Error inserting role:", roleInsertError);
+    }
+
+    // Ensure profile exists (upsert)
+    const { error: profileUpsertError } = await supabaseAdmin
+      .from("profiles")
+      .upsert(
+        {
+          user_id: newUser.user.id,
+          full_name,
+          email,
+          agency_id,
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (profileUpsertError) {
+      console.error("Error upserting profile:", profileUpsertError);
     }
 
     return new Response(
