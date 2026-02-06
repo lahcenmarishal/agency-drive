@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Plus, Search, Mail, Building2, Shield, CheckCircle, XCircle } from "lucide-react";
+import { Users, Plus, Search, Mail, Building2, Shield, CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -9,9 +9,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateAdminForm } from "@/components/users/CreateAdminForm";
-import { useUsers, useCreateUser } from "@/hooks/useUsers";
+import { EditUserForm } from "@/components/users/EditUserForm";
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, UserWithProfile } from "@/hooks/useUsers";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,19 +33,23 @@ const roleLabels: Record<string, string> = {
 };
 
 const roleClasses: Record<string, string> = {
-  super_admin: "bg-red-500/15 text-red-400",
+  super_admin: "bg-destructive/15 text-destructive",
   admin: "bg-primary/15 text-primary",
-  agent: "bg-blue-500/15 text-blue-400",
+  agent: "bg-accent text-accent-foreground",
 };
 
 export default function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserWithProfile | null>(null);
+  const [deletingUser, setDeletingUser] = useState<UserWithProfile | null>(null);
 
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, user: currentUser } = useAuth();
   const { data: agencies } = useAgencies();
   const { data: users, isLoading } = useUsers();
   const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
 
   const filteredUsers = users?.filter((user) =>
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,6 +61,31 @@ export default function UsersManagement() {
       { ...data, role: "admin" },
       { onSuccess: () => setIsFormOpen(false) }
     );
+  };
+
+  const handleUpdate = (data: { full_name: string; email: string; is_active: boolean; agency_ids: string[] }) => {
+    if (!editingUser) return;
+    updateUser.mutate(
+      { 
+        user_id: editingUser.user_id, 
+        full_name: data.full_name, 
+        is_active: data.is_active,
+        agency_ids: data.agency_ids,
+      },
+      { onSuccess: () => setEditingUser(null) }
+    );
+  };
+
+  const handleDelete = () => {
+    if (!deletingUser) return;
+    deleteUser.mutate(deletingUser.user_id, {
+      onSuccess: () => setDeletingUser(null),
+    });
+  };
+
+  const canModifyUser = (user: UserWithProfile) => {
+    // Cannot modify super admins or yourself
+    return user.role !== "super_admin" && user.user_id !== currentUser?.id;
   };
 
   if (!isSuperAdmin) {
@@ -101,7 +141,29 @@ export default function UsersManagement() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredUsers?.map((user) => (
-            <div key={user.id} className="glass-card p-6 group">
+            <div key={user.id} className="glass-card p-6 group relative">
+              {/* Action buttons */}
+              {canModifyUser(user) && (
+                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setEditingUser(user)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => setDeletingUser(user)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
               <div className="flex items-start justify-between mb-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-foreground font-semibold text-lg">
                   {user.full_name?.split(" ").map((n) => n[0]).join("") || "?"}
@@ -126,14 +188,14 @@ export default function UsersManagement() {
                 {user.is_active ? (
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                 )}
               </div>
               
               {user.agency_name && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                   <Building2 className="h-4 w-4" />
-                  <span>{user.agency_name}</span>
+                  <span className="line-clamp-2">{user.agency_name}</span>
                 </div>
               )}
               
@@ -164,6 +226,47 @@ export default function UsersManagement() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <EditUserForm
+              user={editingUser}
+              agencies={agencies || []}
+              userAgencyIds={editingUser.agency_ids || []}
+              onSubmit={handleUpdate}
+              onCancel={() => setEditingUser(null)}
+              isLoading={updateUser.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer l'utilisateur</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer <strong>{deletingUser?.full_name}</strong> ? 
+              Cette action est irréversible et supprimera également toutes les données associées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUser.isPending ? "Suppression..." : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
