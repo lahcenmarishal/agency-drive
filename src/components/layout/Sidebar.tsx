@@ -25,14 +25,14 @@ const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/utilisateurs", icon: Shield, superAdminOnly: true },
   { name: "Agences", href: "/agences", icon: Building2, adminOnly: true },
-  { name: "Employés", href: "/employes", icon: Users },
+  { name: "Employés", href: "/employes", icon: Users, adminOnly: true },
   { name: "Chauffeurs", href: "/chauffeurs", icon: Truck },
   { name: "Véhicules", href: "/vehicules", icon: Car },
   { name: "Clients", href: "/clients", icon: UserCheck },
   { name: "Réservations", href: "/reservations", icon: CalendarClock },
   { name: "Locations", href: "/locations", icon: Key },
-  { name: "Comptabilité", href: "/comptabilite", icon: Wallet },
-  { name: "Paramètres", href: "/parametres", icon: Settings },
+  { name: "Comptabilité", href: "/comptabilite", icon: Wallet, adminOnly: true },
+  { name: "Paramètres", href: "/parametres", icon: Settings, adminOnly: true },
 ];
 
 export function Sidebar() {
