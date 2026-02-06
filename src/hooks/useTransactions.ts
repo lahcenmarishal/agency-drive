@@ -10,11 +10,11 @@ export type TransactionInsert = TablesInsert<"transactions">;
 export type TransactionType = Enums<"transaction_type">;
 
 export function useTransactions(month?: Date) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
   const targetMonth = month || new Date();
 
   return useQuery({
-    queryKey: ["transactions", filterByAgency, format(targetMonth, "yyyy-MM")],
+    queryKey: ["transactions", filterByAgency, filterByAgencies, format(targetMonth, "yyyy-MM")],
     queryFn: async () => {
       const start = startOfMonth(targetMonth);
       const end = endOfMonth(targetMonth);
@@ -28,13 +28,15 @@ export function useTransactions(month?: Date) {
 
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
@@ -86,11 +88,11 @@ export function useDeleteTransaction() {
 }
 
 export function useFinancialSummary(month?: Date) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
   const targetMonth = month || new Date();
 
   return useQuery({
-    queryKey: ["financial-summary", filterByAgency, format(targetMonth, "yyyy-MM")],
+    queryKey: ["financial-summary", filterByAgency, filterByAgencies, format(targetMonth, "yyyy-MM")],
     queryFn: async () => {
       const start = startOfMonth(targetMonth);
       const end = endOfMonth(targetMonth);
@@ -103,6 +105,8 @@ export function useFinancialSummary(month?: Date) {
 
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
 
       const { data, error } = await query;
@@ -122,15 +126,15 @@ export function useFinancialSummary(month?: Date) {
         balance: income - expenses,
       };
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
 export function useMonthlyReport() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["monthly-report", filterByAgency],
+    queryKey: ["monthly-report", filterByAgency, filterByAgencies],
     queryFn: async () => {
       const months = [];
       const now = new Date();
@@ -148,6 +152,8 @@ export function useMonthlyReport() {
 
         if (filterByAgency) {
           query = query.eq("agency_id", filterByAgency);
+        } else if (filterByAgencies && filterByAgencies.length > 0) {
+          query = query.in("agency_id", filterByAgencies);
         }
 
         const { data, error } = await query;
@@ -171,16 +177,16 @@ export function useMonthlyReport() {
 
       return months;
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
 export function useCategoryBreakdown(month?: Date) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
   const targetMonth = month || new Date();
 
   return useQuery({
-    queryKey: ["category-breakdown", filterByAgency, format(targetMonth, "yyyy-MM")],
+    queryKey: ["category-breakdown", filterByAgency, filterByAgencies, format(targetMonth, "yyyy-MM")],
     queryFn: async () => {
       const start = startOfMonth(targetMonth);
       const end = endOfMonth(targetMonth);
@@ -193,6 +199,8 @@ export function useCategoryBreakdown(month?: Date) {
 
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
 
       const { data, error } = await query;
@@ -217,6 +225,6 @@ export function useCategoryBreakdown(month?: Date) {
         ...values,
       }));
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }

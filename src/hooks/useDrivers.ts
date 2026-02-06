@@ -10,10 +10,10 @@ export type DriverInsert = TablesInsert<"drivers">;
 export type DriverUpdate = TablesUpdate<"drivers">;
 
 export function useDrivers() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["drivers", filterByAgency],
+    queryKey: ["drivers", filterByAgency, filterByAgencies],
     queryFn: async () => {
       let query = supabase
         .from("drivers")
@@ -22,13 +22,15 @@ export function useDrivers() {
 
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 

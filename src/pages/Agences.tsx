@@ -39,9 +39,11 @@ import {
   useDeleteAgency,
   type Agency,
 } from "@/hooks/useAgencies";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Agences() {
   const navigate = useNavigate();
+  const { isSuperAdmin } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [deleteAgencyId, setDeleteAgencyId] = useState<string | null>(null);
@@ -81,13 +83,16 @@ export default function Agences() {
         <div>
           <h1 className="text-3xl font-bold font-display">Agences</h1>
           <p className="text-muted-foreground mt-1">
-            Gérez vos agences de location
+            {isSuperAdmin ? "Gérez toutes les agences" : "Vos agences de location"}
           </p>
         </div>
-        <Button className="gap-2" onClick={() => setFormOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Nouvelle agence
-        </Button>
+        {/* Only super admin can create new agencies */}
+        {isSuperAdmin && (
+          <Button className="gap-2" onClick={() => setFormOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Nouvelle agence
+          </Button>
+        )}
       </div>
 
       {/* Loading State */}
@@ -110,12 +115,16 @@ export default function Agences() {
           <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">Aucune agence</h3>
           <p className="text-muted-foreground mb-4">
-            Commencez par créer votre première agence
+            {isSuperAdmin 
+              ? "Commencez par créer votre première agence"
+              : "Aucune agence ne vous est assignée"}
           </p>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle agence
-          </Button>
+          {isSuperAdmin && (
+            <Button onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouvelle agence
+            </Button>
+          )}
         </div>
       )}
 
@@ -151,25 +160,30 @@ export default function Agences() {
                       <Eye className="h-4 w-4 mr-2" />
                       Voir détails
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingAgency(agence);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Modifier
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteAgencyId(agence.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer
-                    </DropdownMenuItem>
+                    {/* Only super admin can edit/delete agencies */}
+                    {isSuperAdmin && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingAgency(agence);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Modifier
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteAgencyId(agence.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
