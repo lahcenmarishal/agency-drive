@@ -8,10 +8,17 @@ interface CreateUserData {
   password: string;
   full_name: string;
   role: "admin" | "agent";
-  agency_ids: string[]; // Changed from agency_id to agency_ids
+  agency_ids: string[];
 }
 
-interface UserWithProfile {
+interface UpdateUserData {
+  user_id: string;
+  full_name: string;
+  is_active: boolean;
+  agency_ids: string[];
+}
+
+export interface UserWithProfile {
   id: string;
   user_id: string;
   full_name: string | null;
@@ -20,7 +27,8 @@ interface UserWithProfile {
   is_active: boolean;
   role: string | null;
   agency_name: string | null;
-  agency_names?: string[]; // For admins with multiple agencies
+  agency_names?: string[];
+  agency_ids?: string[];
 }
 
 export function useCreateUser() {
@@ -54,6 +62,87 @@ export function useCreateUser() {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Erreur lors de la création de l'utilisateur");
+      console.error(error);
+    },
+  });
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+  const { session } = useAuth();
+
+  return useMutation({
+    mutationFn: async (data: UpdateUserData) => {
+      if (!session?.access_token) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await supabase.functions.invoke("manage-user", {
+        body: {
+          action: "update",
+          user_id: data.user_id,
+          full_name: data.full_name,
+          is_active: data.is_active,
+          agency_ids: data.agency_ids,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Error updating user");
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      toast.success("Utilisateur mis à jour avec succès");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la mise à jour");
+      console.error(error);
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  const { session } = useAuth();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      if (!session?.access_token) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await supabase.functions.invoke("manage-user", {
+        body: {
+          action: "delete",
+          user_id: userId,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Error deleting user");
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      toast.success("Utilisateur supprimé avec succès");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de la suppression");
       console.error(error);
     },
   });
@@ -104,14 +193,15 @@ export function useUsers() {
 
       if (adminAgenciesError) throw adminAgenciesError;
 
-      // Create a map of user_id to agency names
-      const adminAgencyMap = new Map<string, string[]>();
+      // Create maps for user data
+      const adminAgencyMap = new Map<string, { names: string[]; ids: string[] }>();
       adminAgencies?.forEach((aa) => {
-        const current = adminAgencyMap.get(aa.user_id) || [];
+        const current = adminAgencyMap.get(aa.user_id) || { names: [], ids: [] };
         const agencyName = (aa.agencies as any)?.name;
         if (agencyName) {
-          current.push(agencyName);
+          current.names.push(agencyName);
         }
+        current.ids.push(aa.agency_id);
         adminAgencyMap.set(aa.user_id, current);
       });
 
@@ -120,7 +210,7 @@ export function useUsers() {
 
       return (profiles || []).map(profile => {
         const role = roleMap.get(profile.user_id) || null;
-        const agencyNames = adminAgencyMap.get(profile.user_id) || [];
+        const agencyData = adminAgencyMap.get(profile.user_id) || { names: [], ids: [] };
         
         return {
           id: profile.id,
@@ -130,10 +220,11 @@ export function useUsers() {
           agency_id: profile.agency_id,
           is_active: profile.is_active,
           role,
-          agency_name: agencyNames.length > 0 
-            ? agencyNames.join(", ") 
+          agency_name: agencyData.names.length > 0 
+            ? agencyData.names.join(", ") 
             : (profile.agencies as any)?.name || null,
-          agency_names: agencyNames.length > 0 ? agencyNames : undefined,
+          agency_names: agencyData.names.length > 0 ? agencyData.names : undefined,
+          agency_ids: agencyData.ids.length > 0 ? agencyData.ids : undefined,
         };
       });
     },
