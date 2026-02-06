@@ -30,7 +30,8 @@ export function useAccessibleAgencies() {
         return data as Agency[];
       }
 
-      // Admin sees only their assigned agencies
+      // Admin sees their assigned agencies from admin_agencies table
+      // Falls back to profile agency_id if no admin_agencies entries exist
       if (isAdmin) {
         const { data: adminAgencies, error: adminError } = await supabase
           .from("admin_agencies")
@@ -39,20 +40,33 @@ export function useAccessibleAgencies() {
 
         if (adminError) throw adminError;
 
-        if (!adminAgencies || adminAgencies.length === 0) {
-          return [];
+        // If admin has entries in admin_agencies, use those
+        if (adminAgencies && adminAgencies.length > 0) {
+          const agencyIds = adminAgencies.map((aa) => aa.agency_id);
+          
+          const { data, error } = await supabase
+            .from("agencies")
+            .select("*")
+            .in("id", agencyIds)
+            .order("name", { ascending: true });
+
+          if (error) throw error;
+          return data as Agency[];
         }
 
-        const agencyIds = adminAgencies.map((aa) => aa.agency_id);
-        
-        const { data, error } = await supabase
-          .from("agencies")
-          .select("*")
-          .in("id", agencyIds)
-          .order("name", { ascending: true });
+        // Fallback: use the agency_id from profile (for admins not yet in admin_agencies)
+        if (agencyId) {
+          const { data, error } = await supabase
+            .from("agencies")
+            .select("*")
+            .eq("id", agencyId)
+            .single();
 
-        if (error) throw error;
-        return data as Agency[];
+          if (error) throw error;
+          return data ? [data] : [];
+        }
+
+        return [];
       }
 
       // Agent sees only their single agency
