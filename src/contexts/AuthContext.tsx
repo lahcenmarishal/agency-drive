@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "agent";
+export type AppRole = "super_admin" | "admin" | "agent";
 
 interface UserProfile {
   id: string;
@@ -19,10 +19,11 @@ interface AuthContextType {
   profile: UserProfile | null;
   role: AppRole | null;
   agencyId: string | null;
+  isSuperAdmin: boolean;
   isAdmin: boolean;
+  isAgent: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -131,20 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-    return { error };
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
@@ -157,10 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     role,
     agencyId: profile?.agency_id ?? null,
-    isAdmin: role === "admin",
+    isSuperAdmin: role === "super_admin",
+    isAdmin: role === "admin" || role === "super_admin",
+    isAgent: role === "agent",
     isLoading,
     signIn,
-    signUp,
     signOut,
   };
 

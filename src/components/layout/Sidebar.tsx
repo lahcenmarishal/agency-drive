@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Utilisateurs", href: "/utilisateurs", icon: Shield, superAdminOnly: true },
   { name: "Agences", href: "/agences", icon: Building2, adminOnly: true },
   { name: "Employés", href: "/employes", icon: Users },
   { name: "Chauffeurs", href: "/chauffeurs", icon: Truck },
@@ -37,7 +38,7 @@ const navigation = [
 export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const { profile, role, isAdmin, signOut } = useAuth();
+  const { profile, role, isAdmin, isSuperAdmin, signOut } = useAuth();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -50,6 +51,7 @@ export function Sidebar() {
 
   // Filter navigation based on role
   const filteredNavigation = navigation.filter((item) => {
+    if ((item as any).superAdminOnly && !isSuperAdmin) return false;
     if (item.adminOnly && !isAdmin) return false;
     return true;
   });
@@ -177,10 +179,12 @@ export function Sidebar() {
                   {profile?.full_name || profile?.email || "Utilisateur"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                  {role === "admin" ? (
-                    <span className="text-primary">Admin</span>
+                  {role === "super_admin" ? (
+                    <span className="text-destructive">Super Admin</span>
+                  ) : role === "admin" ? (
+                    <span className="text-primary">Admin Agence</span>
                   ) : (
-                    <span>Agent</span>
+                    <span>Employé</span>
                   )}
                 </p>
               </div>

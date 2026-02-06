@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,7 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, Eye, EyeOff, UserPlus } from "lucide-react";
 import type { Employee } from "@/hooks/useEmployees";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nom requis"),
@@ -28,6 +33,17 @@ const formSchema = z.object({
   position: z.string().optional(),
   hire_date: z.string().optional(),
   is_active: z.boolean().default(true),
+  create_account: z.boolean().default(false),
+  account_email: z.string().email("Email invalide").optional().or(z.literal("")),
+  account_password: z.string().optional(),
+}).refine((data) => {
+  if (data.create_account) {
+    return data.account_email && data.account_email.length > 0 && data.account_password && data.account_password.length >= 6;
+  }
+  return true;
+}, {
+  message: "Email et mot de passe requis pour créer un compte (min 6 caractères)",
+  path: ["account_password"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -47,6 +63,10 @@ const positions = [
 ];
 
 export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: EmployeeFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const { isAdmin } = useAuth();
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,8 +76,21 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
       position: employee?.position || "",
       hire_date: employee?.hire_date || "",
       is_active: employee?.is_active ?? true,
+      create_account: false,
+      account_email: employee?.email || "",
+      account_password: "",
     },
   });
+
+  const createAccount = form.watch("create_account");
+
+  // Sync email fields
+  const handleEmailChange = (email: string) => {
+    form.setValue("email", email);
+    if (!form.getValues("account_email")) {
+      form.setValue("account_email", email);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -84,7 +117,15 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="email@exemple.com" {...field} />
+                  <Input 
+                    type="email" 
+                    placeholder="email@exemple.com" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleEmailChange(e.target.value);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -164,6 +205,98 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
             </FormItem>
           )}
         />
+
+        {/* Account creation section - only for admins and new employees */}
+        {isAdmin && !employee && (
+          <Collapsible open={isAccountOpen} onOpenChange={setIsAccountOpen}>
+            <CollapsibleTrigger asChild>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Créer un compte utilisateur
+                </span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 transition-transform",
+                  isAccountOpen && "rotate-180"
+                )} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-4">
+              <FormField
+                control={form.control}
+                name="create_account"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-4 bg-muted/30">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Créer un compte</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Permettre à cet employé de se connecter à l'application
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {createAccount && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="account_email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email du compte *</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@exemple.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="account_password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mot de passe *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Min. 6 caractères"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>

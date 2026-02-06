@@ -22,6 +22,7 @@ import Comptabilite from "./pages/Comptabilite";
 import Parametres from "./pages/Parametres";
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/AdminAuth";
+import UsersManagement from "./pages/UsersManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -145,6 +146,16 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <Parametres />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/utilisateurs"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <UsersManagement />
                     </AppLayout>
                   </ProtectedRoute>
                 }
