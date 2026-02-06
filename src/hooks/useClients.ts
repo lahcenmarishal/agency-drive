@@ -9,15 +9,17 @@ export type ClientInsert = TablesInsert<"clients">;
 export type ClientUpdate = TablesUpdate<"clients">;
 
 export function useClients(showBlacklistedOnly?: boolean) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["clients", filterByAgency, showBlacklistedOnly],
+    queryKey: ["clients", filterByAgency, filterByAgencies, showBlacklistedOnly],
     queryFn: async () => {
       let query = supabase.from("clients").select("*");
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       if (showBlacklistedOnly) {
@@ -29,7 +31,7 @@ export function useClients(showBlacklistedOnly?: boolean) {
       if (error) throw error;
       return data as Client[];
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 

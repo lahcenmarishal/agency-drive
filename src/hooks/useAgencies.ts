@@ -2,40 +2,32 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { useAccessibleAgencies } from "./useAccessibleAgencies";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type Agency = Tables<"agencies">;
 export type AgencyInsert = TablesInsert<"agencies">;
 export type AgencyUpdate = TablesUpdate<"agencies">;
 
+// Use accessible agencies hook - returns only agencies the user can access
 export function useAgencies() {
-  return useQuery({
-    queryKey: ["agencies"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("agencies")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data as Agency[];
-    },
-  });
+  return useAccessibleAgencies();
 }
 
 export function useAgencyWithStats() {
+  const { isSuperAdmin } = useAuth();
+  const { data: accessibleAgencies, isLoading: isAccessibleLoading } = useAccessibleAgencies();
+
   return useQuery({
-    queryKey: ["agencies-with-stats"],
+    queryKey: ["agencies-with-stats", accessibleAgencies?.map(a => a.id)],
     queryFn: async () => {
-      const { data: agencies, error: agenciesError } = await supabase
-        .from("agencies")
-        .select("*")
-        .order("created_at", { ascending: false });
+      if (!accessibleAgencies || accessibleAgencies.length === 0) {
+        return [];
+      }
 
-      if (agenciesError) throw agenciesError;
-
-      // Get vehicle and employee counts for each agency
+      // Get vehicle and employee counts for each accessible agency
       const agenciesWithStats = await Promise.all(
-        (agencies || []).map(async (agency) => {
+        accessibleAgencies.map(async (agency) => {
           const [vehiclesResult, employeesResult] = await Promise.all([
             supabase
               .from("vehicles")
@@ -57,6 +49,7 @@ export function useAgencyWithStats() {
 
       return agenciesWithStats;
     },
+    enabled: !isAccessibleLoading && !!accessibleAgencies,
   });
 }
 

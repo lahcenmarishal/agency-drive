@@ -12,10 +12,10 @@ export type RentalInsert = TablesInsert<"rentals">;
 export type RentalUpdate = TablesUpdate<"rentals">;
 
 export function useRentals(statusFilter?: Enums<"rental_status">) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["rentals", filterByAgency, statusFilter],
+    queryKey: ["rentals", filterByAgency, filterByAgencies, statusFilter],
     queryFn: async () => {
       let query = supabase
         .from("rentals")
@@ -27,6 +27,8 @@ export function useRentals(statusFilter?: Enums<"rental_status">) {
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       if (statusFilter) {
@@ -50,7 +52,7 @@ export function useRentals(statusFilter?: Enums<"rental_status">) {
       
       return rentalsWithDelay as (Rental & { isOverdue: boolean })[];
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
@@ -141,10 +143,10 @@ export function useCompleteRental() {
 
 // Hook pour les locations en retard
 export function useOverdueRentals() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["overdue-rentals", filterByAgency],
+    queryKey: ["overdue-rentals", filterByAgency, filterByAgencies],
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
       
@@ -160,6 +162,8 @@ export function useOverdueRentals() {
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       const { data, error } = await query;
@@ -167,16 +171,16 @@ export function useOverdueRentals() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
 // Hook pour les retours prévus aujourd'hui
 export function useTodayReturns() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["today-returns", filterByAgency],
+    queryKey: ["today-returns", filterByAgency, filterByAgencies],
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
       
@@ -192,6 +196,8 @@ export function useTodayReturns() {
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       const { data, error } = await query;
@@ -199,6 +205,6 @@ export function useTodayReturns() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }

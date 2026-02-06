@@ -12,10 +12,10 @@ export type ReservationInsert = TablesInsert<"reservations">;
 export type ReservationUpdate = TablesUpdate<"reservations">;
 
 export function useReservations(statusFilter?: Enums<"reservation_status">) {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["reservations", filterByAgency, statusFilter],
+    queryKey: ["reservations", filterByAgency, filterByAgencies, statusFilter],
     queryFn: async () => {
       let query = supabase
         .from("reservations")
@@ -27,6 +27,8 @@ export function useReservations(statusFilter?: Enums<"reservation_status">) {
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       if (statusFilter) {
@@ -38,7 +40,7 @@ export function useReservations(statusFilter?: Enums<"reservation_status">) {
       if (error) throw error;
       return data as Reservation[];
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 

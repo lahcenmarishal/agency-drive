@@ -13,15 +13,18 @@ import { Enums } from "@/integrations/supabase/types";
 export type VehicleStatus = Enums<"vehicle_status">;
 
 export function useVehicles(statusFilter?: VehicleStatus | "all") {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["vehicles", filterByAgency, statusFilter],
+    queryKey: ["vehicles", filterByAgency, filterByAgencies, statusFilter],
     queryFn: async () => {
       let query = supabase.from("vehicles").select("*");
       
+      // Apply agency filtering
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       if (statusFilter && statusFilter !== "all") {
@@ -33,7 +36,7 @@ export function useVehicles(statusFilter?: VehicleStatus | "all") {
       if (error) throw error;
       return data as Vehicle[];
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
@@ -129,10 +132,10 @@ export function useDeleteVehicle() {
 
 // Hook pour les alertes d'expiration de documents
 export function useVehicleDocumentAlerts() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["vehicle-document-alerts", filterByAgency],
+    queryKey: ["vehicle-document-alerts", filterByAgency, filterByAgencies],
     queryFn: async () => {
       const today = new Date();
       const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -141,6 +144,8 @@ export function useVehicleDocumentAlerts() {
       
       if (filterByAgency) {
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        query = query.in("agency_id", filterByAgencies);
       }
       
       const { data, error } = await query;
@@ -181,6 +186,6 @@ export function useVehicleDocumentAlerts() {
       
       return alerts.sort((a, b) => a.daysRemaining - b.daysRemaining);
     },
-    enabled: isAdmin || !!agencyId,
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }

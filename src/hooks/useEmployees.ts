@@ -21,26 +21,32 @@ interface CreateEmployeeWithAccount {
 }
 
 export function useEmployees() {
-  const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
+  const { filterByAgency, filterByAgencies, isSuperAdmin, agencyId } = useAgencyFilter();
 
   return useQuery({
-    queryKey: ["employees", filterByAgency],
+    queryKey: ["employees", filterByAgency, filterByAgencies],
     queryFn: async () => {
       let query = supabase
         .from("employees")
         .select("*, agencies(name)")
         .order("created_at", { ascending: false });
 
+      // Apply agency filtering
       if (filterByAgency) {
+        // Specific agency selected
         query = query.eq("agency_id", filterByAgency);
+      } else if (filterByAgencies && filterByAgencies.length > 0) {
+        // No specific selection, but restricted to accessible agencies (admin)
+        query = query.in("agency_id", filterByAgencies);
       }
+      // If super admin with no selection, no filter applied (sees all)
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    // Admin can query (filterByAgency null or set), Agent needs their agencyId
-    enabled: isAdmin || !!agencyId,
+    // Super admin can query, Admin with agencies can query, Agent needs their agencyId
+    enabled: isSuperAdmin || (filterByAgencies && filterByAgencies.length > 0) || !!agencyId,
   });
 }
 
