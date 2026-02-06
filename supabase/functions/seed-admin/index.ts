@@ -31,32 +31,48 @@ Deno.serve(async (req) => {
     );
 
     if (existingAdmin) {
-      // Update existing admin to super_admin role if not already
-      const { data: currentRole } = await supabaseAdmin
+      // Ensure super_admin role (force single role row)
+      const { error: deleteRolesError } = await supabaseAdmin
         .from("user_roles")
-        .select("role")
-        .eq("user_id", existingAdmin.id)
-        .single();
+        .delete()
+        .eq("user_id", existingAdmin.id);
 
-      if (currentRole?.role !== "super_admin") {
-        await supabaseAdmin
-          .from("user_roles")
-          .update({ role: "super_admin" })
-          .eq("user_id", existingAdmin.id);
+      if (deleteRolesError) {
+        console.error("Error cleaning roles:", deleteRolesError);
+      }
 
-        // Update password
-        await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, {
-          password: adminPassword,
-        });
+      const { error: insertRoleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: existingAdmin.id, role: "super_admin" });
 
-        return new Response(
-          JSON.stringify({ message: "Admin updated to super_admin", success: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      if (insertRoleError) {
+        console.error("Error inserting super_admin role:", insertRoleError);
+      }
+
+      // Update password (idempotent)
+      await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, {
+        password: adminPassword,
+      });
+
+      // Ensure profile exists / updated
+      const { error: profileUpsertError } = await supabaseAdmin
+        .from("profiles")
+        .upsert(
+          {
+            user_id: existingAdmin.id,
+            full_name: "Super Administrateur",
+            email: adminEmail,
+            agency_id: null,
+          },
+          { onConflict: "user_id" }
         );
+
+      if (profileUpsertError) {
+        console.error("Error upserting profile:", profileUpsertError);
       }
 
       return new Response(
-        JSON.stringify({ message: "Super admin already exists", success: true }),
+        JSON.stringify({ message: "Admin updated to super_admin", success: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
