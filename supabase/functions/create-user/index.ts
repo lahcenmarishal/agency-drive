@@ -10,7 +10,8 @@ interface CreateUserRequest {
   password: string;
   full_name: string;
   role: "admin" | "agent";
-  agency_id: string;
+  agency_id?: string; // For backward compatibility (agents)
+  agency_ids?: string[]; // For admins with multiple agencies
 }
 
 Deno.serve(async (req) => {
@@ -63,10 +64,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { email, password, full_name, role, agency_id }: CreateUserRequest = await req.json();
+    const { email, password, full_name, role, agency_id, agency_ids }: CreateUserRequest = await req.json();
+
+    // Determine which agency IDs to use
+    const agencyIdsToUse = agency_ids && agency_ids.length > 0 ? agency_ids : (agency_id ? [agency_id] : []);
 
     // Validate input
-    if (!email || !password || !full_name || !role || !agency_id) {
+    if (!email || !password || !full_name || !role || agencyIdsToUse.length === 0) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -98,7 +102,8 @@ Deno.serve(async (req) => {
         .eq("user_id", requestingUser.id)
         .single();
 
-      if (adminProfile?.agency_id !== agency_id) {
+      // For agents, only one agency should be provided
+      if (agencyIdsToUse.length !== 1 || adminProfile?.agency_id !== agencyIdsToUse[0]) {
         return new Response(
           JSON.stringify({ error: "Cannot create users for other agencies" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -160,6 +165,9 @@ Deno.serve(async (req) => {
       console.error("Error inserting role:", roleInsertError);
     }
 
+    // Use the first agency for the profile (primary agency)
+    const primaryAgencyId = agencyIdsToUse[0];
+
     // Ensure profile exists (upsert)
     const { error: profileUpsertError } = await supabaseAdmin
       .from("profiles")
@@ -168,13 +176,29 @@ Deno.serve(async (req) => {
           user_id: newUser.user.id,
           full_name,
           email,
-          agency_id,
+          agency_id: primaryAgencyId,
         },
         { onConflict: "user_id" }
       );
 
     if (profileUpsertError) {
       console.error("Error upserting profile:", profileUpsertError);
+    }
+
+    // For admins, create entries in admin_agencies table for each agency
+    if (role === "admin" && agencyIdsToUse.length > 0) {
+      const adminAgencyEntries = agencyIdsToUse.map((agencyId) => ({
+        user_id: newUser.user.id,
+        agency_id: agencyId,
+      }));
+
+      const { error: adminAgenciesError } = await supabaseAdmin
+        .from("admin_agencies")
+        .insert(adminAgencyEntries);
+
+      if (adminAgenciesError) {
+        console.error("Error inserting admin_agencies:", adminAgenciesError);
+      }
     }
 
     return new Response(

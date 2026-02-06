@@ -8,7 +8,7 @@ interface CreateUserData {
   password: string;
   full_name: string;
   role: "admin" | "agent";
-  agency_id: string;
+  agency_ids: string[]; // Changed from agency_id to agency_ids
 }
 
 interface UserWithProfile {
@@ -20,6 +20,7 @@ interface UserWithProfile {
   is_active: boolean;
   role: string | null;
   agency_name: string | null;
+  agency_names?: string[]; // For admins with multiple agencies
 }
 
 export function useCreateUser() {
@@ -95,19 +96,46 @@ export function useUsers() {
 
       if (rolesError) throw rolesError;
 
+      // Fetch admin_agencies for users who are admins
+      const { data: adminAgencies, error: adminAgenciesError } = await supabase
+        .from("admin_agencies")
+        .select("user_id, agency_id, agencies(name)")
+        .in("user_id", userIds);
+
+      if (adminAgenciesError) throw adminAgenciesError;
+
+      // Create a map of user_id to agency names
+      const adminAgencyMap = new Map<string, string[]>();
+      adminAgencies?.forEach((aa) => {
+        const current = adminAgencyMap.get(aa.user_id) || [];
+        const agencyName = (aa.agencies as any)?.name;
+        if (agencyName) {
+          current.push(agencyName);
+        }
+        adminAgencyMap.set(aa.user_id, current);
+      });
+
       // Combine profiles with roles
       const roleMap = new Map(roles?.map(r => [r.user_id, r.role]) || []);
 
-      return (profiles || []).map(profile => ({
-        id: profile.id,
-        user_id: profile.user_id,
-        full_name: profile.full_name,
-        email: profile.email,
-        agency_id: profile.agency_id,
-        is_active: profile.is_active,
-        role: roleMap.get(profile.user_id) || null,
-        agency_name: (profile.agencies as any)?.name || null,
-      }));
+      return (profiles || []).map(profile => {
+        const role = roleMap.get(profile.user_id) || null;
+        const agencyNames = adminAgencyMap.get(profile.user_id) || [];
+        
+        return {
+          id: profile.id,
+          user_id: profile.user_id,
+          full_name: profile.full_name,
+          email: profile.email,
+          agency_id: profile.agency_id,
+          is_active: profile.is_active,
+          role,
+          agency_name: agencyNames.length > 0 
+            ? agencyNames.join(", ") 
+            : (profile.agencies as any)?.name || null,
+          agency_names: agencyNames.length > 0 ? agencyNames : undefined,
+        };
+      });
     },
     enabled: isSuperAdmin || isAdmin,
   });

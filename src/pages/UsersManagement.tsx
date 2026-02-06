@@ -41,7 +41,7 @@ export default function UsersManagement() {
     user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreate = (data: { full_name: string; email: string; password: string; agency_id: string }) => {
+  const handleCreate = (data: { full_name: string; email: string; password: string; agency_ids: string[] }) => {
     createUser.mutate(
       { ...data, role: "admin" },
       { onSuccess: () => setIsFormOpen(false) }

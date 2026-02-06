@@ -12,20 +12,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nom requis"),
   email: z.string().email("Email invalide"),
   password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
-  agency_id: z.string().min(1, "Agence requise"),
+  agency_ids: z.array(z.string()).min(1, "Sélectionnez au moins une agence"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -37,7 +32,7 @@ interface Agency {
 
 interface CreateAdminFormProps {
   agencies: Agency[];
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: { full_name: string; email: string; password: string; agency_ids: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -51,13 +46,28 @@ export function CreateAdminForm({ agencies, onSubmit, onCancel, isLoading }: Cre
       full_name: "",
       email: "",
       password: "",
-      agency_id: "",
+      agency_ids: [],
     },
   });
 
+  const selectedAgencyIds = form.watch("agency_ids");
+
+  const toggleAgency = (agencyId: string) => {
+    const current = form.getValues("agency_ids");
+    if (current.includes(agencyId)) {
+      form.setValue("agency_ids", current.filter((id) => id !== agencyId), { shouldValidate: true });
+    } else {
+      form.setValue("agency_ids", [...current, agencyId], { shouldValidate: true });
+    }
+  };
+
+  const handleFormSubmit = (data: FormData) => {
+    onSubmit(data as { full_name: string; email: string; password: string; agency_ids: string[] });
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="full_name"
@@ -121,24 +131,63 @@ export function CreateAdminForm({ agencies, onSubmit, onCancel, isLoading }: Cre
 
         <FormField
           control={form.control}
-          name="agency_id"
-          render={({ field }) => (
+          name="agency_ids"
+          render={() => (
             <FormItem>
-              <FormLabel>Agence *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une agence" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {agencies.map((agency) => (
-                    <SelectItem key={agency.id} value={agency.id}>
-                      {agency.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Agences * (sélection multiple)</FormLabel>
+              <div className="space-y-2">
+                {/* Selected agencies as badges */}
+                {selectedAgencyIds.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-2 rounded-lg border border-border bg-muted/30">
+                    {selectedAgencyIds.map((id) => {
+                      const agency = agencies.find((a) => a.id === id);
+                      return (
+                        <Badge
+                          key={id}
+                          variant="secondary"
+                          className="gap-1 pr-1"
+                        >
+                          {agency?.name}
+                          <button
+                            type="button"
+                            onClick={() => toggleAgency(id)}
+                            className="ml-1 rounded-full hover:bg-destructive/20 p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Agency list */}
+                <div className="border rounded-lg max-h-48 overflow-y-auto">
+                  {agencies.length === 0 ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">
+                      Aucune agence disponible
+                    </div>
+                  ) : (
+                    agencies.map((agency) => {
+                      const isSelected = selectedAgencyIds.includes(agency.id);
+                      return (
+                        <button
+                          key={agency.id}
+                          type="button"
+                          onClick={() => toggleAgency(agency.id)}
+                          className={cn(
+                            "w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
+                            isSelected && "bg-accent/50"
+                          )}
+                        >
+                          <span>{agency.name}</span>
+                          {isSelected && <Check className="h-4 w-4 text-primary" />}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
               <FormMessage />
             </FormItem>
           )}
