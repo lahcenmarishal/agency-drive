@@ -8,6 +8,18 @@ export type Employee = Tables<"employees">;
 export type EmployeeInsert = TablesInsert<"employees">;
 export type EmployeeUpdate = TablesUpdate<"employees">;
 
+interface CreateEmployeeWithAccount {
+  full_name: string;
+  email?: string;
+  phone?: string;
+  position?: string;
+  hire_date?: string;
+  is_active?: boolean;
+  create_account?: boolean;
+  account_email?: string;
+  account_password?: string;
+}
+
 export function useEmployees() {
   const { filterByAgency, isAdmin, agencyId } = useAgencyFilter();
 
@@ -37,24 +49,53 @@ export function useCreateEmployee() {
   const { agencyId } = useAgencyFilter();
 
   return useMutation({
-    mutationFn: async (employee: Omit<EmployeeInsert, "agency_id">) => {
+    mutationFn: async (employeeData: CreateEmployeeWithAccount) => {
       if (!agencyId) throw new Error("Agency ID not found");
 
-      const { data, error } = await supabase
+      const { create_account, account_email, account_password, ...employee } = employeeData;
+
+      // First create the employee record
+      const { data: newEmployee, error: employeeError } = await supabase
         .from("employees")
         .insert({ ...employee, agency_id: agencyId })
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (employeeError) throw employeeError;
+
+      // If create_account is true, create the user account via edge function
+      if (create_account && account_email && account_password) {
+        const response = await supabase.functions.invoke("create-user", {
+          body: {
+            email: account_email,
+            password: account_password,
+            full_name: employee.full_name,
+            role: "agent",
+            agency_id: agencyId,
+          },
+        });
+
+        if (response.error) {
+          // Delete the employee if account creation fails
+          await supabase.from("employees").delete().eq("id", newEmployee.id);
+          throw new Error(response.error.message || "Failed to create user account");
+        }
+
+        if (response.data?.error) {
+          // Delete the employee if account creation fails
+          await supabase.from("employees").delete().eq("id", newEmployee.id);
+          throw new Error(response.data.error);
+        }
+      }
+
+      return newEmployee;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast.success("Employé ajouté avec succès");
     },
-    onError: (error) => {
-      toast.error("Erreur lors de l'ajout de l'employé");
+    onError: (error: Error) => {
+      toast.error(error.message || "Erreur lors de l'ajout de l'employé");
       console.error(error);
     },
   });
@@ -65,9 +106,12 @@ export function useUpdateEmployee() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: EmployeeUpdate & { id: string }) => {
+      // Remove account-related fields if they exist
+      const { create_account, account_email, account_password, ...employeeUpdates } = updates as any;
+      
       const { data, error } = await supabase
         .from("employees")
-        .update(updates)
+        .update(employeeUpdates)
         .eq("id", id)
         .select()
         .single();

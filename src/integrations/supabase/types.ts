@@ -580,9 +580,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "agent"
+      app_role: "admin" | "agent" | "super_admin"
       rental_status: "active" | "completed" | "overdue"
       reservation_status: "pending" | "confirmed" | "cancelled" | "converted"
       transaction_type: "income" | "expense"
@@ -714,7 +715,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "agent"],
+      app_role: ["admin", "agent", "super_admin"],
       rental_status: ["active", "completed", "overdue"],
       reservation_status: ["pending", "confirmed", "cancelled", "converted"],
       transaction_type: ["income", "expense"],

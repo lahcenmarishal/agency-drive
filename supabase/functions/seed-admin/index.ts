@@ -22,28 +22,52 @@ Deno.serve(async (req) => {
     });
 
     const adminEmail = "admin@autorent.com";
-    const adminPassword = "rent@698325";
+    const adminPassword = "23oct2022";
 
     // Check if admin already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const adminExists = existingUsers?.users?.some(
+    const existingAdmin = existingUsers?.users?.find(
       (user) => user.email === adminEmail
     );
 
-    if (adminExists) {
+    if (existingAdmin) {
+      // Update existing admin to super_admin role if not already
+      const { data: currentRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", existingAdmin.id)
+        .single();
+
+      if (currentRole?.role !== "super_admin") {
+        await supabaseAdmin
+          .from("user_roles")
+          .update({ role: "super_admin" })
+          .eq("user_id", existingAdmin.id);
+
+        // Update password
+        await supabaseAdmin.auth.admin.updateUserById(existingAdmin.id, {
+          password: adminPassword,
+        });
+
+        return new Response(
+          JSON.stringify({ message: "Admin updated to super_admin", success: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ message: "Admin already exists", success: true }),
+        JSON.stringify({ message: "Super admin already exists", success: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create admin user
+    // Create super admin user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: adminEmail,
       password: adminPassword,
       email_confirm: true,
       user_metadata: {
-        full_name: "Administrateur",
+        full_name: "Super Administrateur",
       },
     });
 
@@ -55,10 +79,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update user role to admin
+    // Update user role to super_admin
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
-      .update({ role: "admin" })
+      .update({ role: "super_admin" })
       .eq("user_id", newUser.user.id);
 
     if (roleError) {
@@ -68,12 +92,12 @@ Deno.serve(async (req) => {
     // Update profile
     await supabaseAdmin
       .from("profiles")
-      .update({ full_name: "Administrateur", email: adminEmail })
+      .update({ full_name: "Super Administrateur", email: adminEmail })
       .eq("user_id", newUser.user.id);
 
     return new Response(
       JSON.stringify({ 
-        message: "Admin created successfully", 
+        message: "Super admin created successfully", 
         success: true,
         userId: newUser.user.id 
       }),
