@@ -24,6 +24,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, Eye, EyeOff, UserPlus } from "lucide-react";
 import type { Employee } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAccessibleAgencies } from "@/hooks/useAccessibleAgencies";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -33,6 +34,7 @@ const formSchema = z.object({
   position: z.string().optional(),
   hire_date: z.string().optional(),
   is_active: z.boolean().default(true),
+  agency_id: z.string().min(1, "Agence requise"),
   create_account: z.boolean().default(false),
   account_email: z.string().email("Email invalide").optional().or(z.literal("")),
   account_password: z.string().optional(),
@@ -46,11 +48,11 @@ const formSchema = z.object({
   path: ["account_password"],
 });
 
-type FormData = z.infer<typeof formSchema>;
+export type EmployeeFormData = z.infer<typeof formSchema>;
 
 interface EmployeeFormProps {
   employee?: Employee | null;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: EmployeeFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -66,8 +68,9 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
   const [showPassword, setShowPassword] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const { isAdmin } = useAuth();
+  const { data: accessibleAgencies, isLoading: isLoadingAgencies } = useAccessibleAgencies();
 
-  const form = useForm<FormData>({
+  const form = useForm<EmployeeFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       full_name: employee?.full_name || "",
@@ -76,6 +79,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
       position: employee?.position || "",
       hire_date: employee?.hire_date || "",
       is_active: employee?.is_active ?? true,
+      agency_id: employee?.agency_id || (accessibleAgencies?.[0]?.id || ""),
       create_account: false,
       account_email: employee?.email || "",
       account_password: "",
@@ -146,6 +150,39 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Employ
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="agency_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Agence *</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une agence" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {isLoadingAgencies ? (
+                    <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                  ) : (
+                    accessibleAgencies?.map((agency) => (
+                      <SelectItem key={agency.id} value={agency.id}>
+                        {agency.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormField

@@ -15,6 +15,7 @@ interface CreateEmployeeWithAccount {
   position?: string;
   hire_date?: string;
   is_active?: boolean;
+  agency_id: string;
   create_account?: boolean;
   account_email?: string;
   account_password?: string;
@@ -52,32 +53,31 @@ export function useEmployees() {
 
 export function useCreateEmployee() {
   const queryClient = useQueryClient();
-  const { agencyId } = useAgencyFilter();
 
   return useMutation({
     mutationFn: async (employeeData: CreateEmployeeWithAccount) => {
-      if (!agencyId) throw new Error("Agency ID not found");
+      const { create_account, account_email, account_password, agency_id, ...employee } = employeeData;
 
-      const { create_account, account_email, account_password, ...employee } = employeeData;
+      if (!agency_id) throw new Error("Agency ID not found");
 
       // First create the employee record
       const { data: newEmployee, error: employeeError } = await supabase
         .from("employees")
-        .insert({ ...employee, agency_id: agencyId })
+        .insert({ ...employee, agency_id })
         .select()
         .single();
 
       if (employeeError) throw employeeError;
 
-      // If create_account is true, create the user account via edge function
-      if (create_account && account_email && account_password) {
+      // If create_account is true AND is_active is true, create the user account via edge function
+      if (create_account && account_email && account_password && employee.is_active) {
         const response = await supabase.functions.invoke("create-user", {
           body: {
             email: account_email,
             password: account_password,
             full_name: employee.full_name,
             role: "agent",
-            agency_id: agencyId,
+            agency_id: agency_id,
           },
         });
 
