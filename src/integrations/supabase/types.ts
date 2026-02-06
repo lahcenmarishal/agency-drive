@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_agencies: {
+        Row: {
+          agency_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_agencies_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agencies: {
         Row: {
           address: string | null
@@ -568,6 +597,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_has_agency_access: {
+        Args: { _agency_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_access_agency: {
         Args: { _agency_id: string; _user_id: string }
         Returns: boolean
