@@ -342,10 +342,10 @@ const Landing = () => {
             </div>
 
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
-              <CardContent className="p-4 sm:p-8 md:p-10">
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  {/* Points clés */}
-                  <div className="space-y-4">
+              <CardContent className="p-5 sm:p-8 md:p-10">
+                {/* Points clés - affichage vertical sur mobile */}
+                <div className="space-y-3 sm:space-y-4 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     {[
                       { text: "Abonnement annuel" },
                       { text: "Offre personnalisée" },
@@ -353,31 +353,31 @@ const Landing = () => {
                       { text: "Mises à jour continues" },
                       { text: "Sans frais cachés" },
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3">
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/50">
                         <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
                           <BadgeCheck className="w-4 h-4 text-success" />
                         </div>
-                        <span className="text-foreground font-medium">{item.text}</span>
+                        <span className="text-foreground font-medium text-sm sm:text-base">{item.text}</span>
                       </div>
                     ))}
                   </div>
+                </div>
 
-                  {/* CTA */}
-                  <div className="text-center md:text-left">
-                    <div className="inline-block p-6 rounded-2xl bg-card border border-border shadow-lg">
-                      <p className="text-muted-foreground mb-4 text-sm">
-                        Découvrez notre solution adaptée à vos besoins
-                      </p>
-                      <DemoRequestForm className="w-full text-base" />
-                    </div>
+                {/* CTA - centré sur tous les écrans */}
+                <div className="flex justify-center">
+                  <div className="w-full max-w-md p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-lg text-center">
+                    <p className="text-muted-foreground mb-4 text-sm">
+                      Découvrez notre solution adaptée à vos besoins
+                    </p>
+                    <DemoRequestForm className="w-full" />
                   </div>
                 </div>
 
                 {/* Réassurance */}
                 <div className="mt-8 pt-6 border-t border-border/50">
-                  <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-info/5 border border-info/10">
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/10">
                     <Shield className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       <span className="font-semibold text-foreground">Transparence totale :</span> une offre claire et détaillée vous est proposée après la démonstration, en fonction de vos besoins réels.
                     </p>
                   </div>
