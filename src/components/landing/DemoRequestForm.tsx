@@ -63,7 +63,8 @@ export const DemoRequestForm = ({
   const defaultTrigger = (
     <Button size={size} variant={variant} className={`gap-2 ${className}`}>
       <Play className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-      <span className="truncate">Demander une démo gratuite</span>
+      <span className="hidden sm:inline">Demander une démo gratuite</span>
+      <span className="sm:hidden">Démo gratuite</span>
     </Button>
   );
 
