@@ -16,6 +16,12 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      setIsLicensed(true);
+      setIsChecking(false);
+      return;
+    }
     const stored = localStorage.getItem(LICENSE_STORAGE_KEY);
     if (stored === "true") {
       setIsLicensed(true);
