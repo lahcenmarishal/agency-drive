@@ -7,6 +7,7 @@ import {
   UserCheck,
   CalendarClock,
   Key,
+  KeyRound,
   Wallet,
   Settings,
   LogOut,
@@ -27,6 +28,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/utilisateurs", icon: Shield, superAdminOnly: true },
+  { name: "Licences", href: "/licences", icon: KeyRound, superAdminOnly: true },
   { name: "Agences", href: "/agences", icon: Building2, adminOnly: true },
   { name: "Employés", href: "/employes", icon: Users, adminOnly: true },
   { name: "Chauffeurs", href: "/chauffeurs", icon: Truck },
