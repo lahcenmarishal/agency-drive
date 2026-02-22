@@ -5,8 +5,10 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LicenseProvider } from "@/contexts/LicenseContext";
 import { AgencyFilterProvider } from "@/contexts/AgencyFilterContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { LicenseGuard } from "@/components/LicenseGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -23,8 +25,8 @@ import Parametres from "./pages/Parametres";
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/AdminAuth";
 import UsersManagement from "./pages/UsersManagement";
+import LicencesManagement from "./pages/LicencesManagement";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -34,8 +36,10 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <LicenseProvider>
           <AuthProvider>
           <AgencyFilterProvider>
+            <LicenseGuard>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
@@ -160,10 +164,22 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/licences"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <LicencesManagement />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </LicenseGuard>
           </AgencyFilterProvider>
         </AuthProvider>
+        </LicenseProvider>
       </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
