@@ -25,7 +25,7 @@ import Parametres from "./pages/Parametres";
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/AdminAuth";
 import UsersManagement from "./pages/UsersManagement";
-import LicencesManagement from "./pages/LicencesManagement";
+
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
@@ -160,16 +160,6 @@ const App = () => (
                   <ProtectedRoute>
                     <AppLayout>
                       <UsersManagement />
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/licences"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <LicencesManagement />
                     </AppLayout>
                   </ProtectedRoute>
                 }
