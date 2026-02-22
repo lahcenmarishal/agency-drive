@@ -1,4 +1,1 @@
 project_id = "nxgjqdxdbzgbqcoifdgf"
-
-[functions.verify-license]
-verify_jwt = false
