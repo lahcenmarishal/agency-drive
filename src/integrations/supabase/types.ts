@@ -261,6 +261,42 @@ export type Database = {
           },
         ]
       }
+      licenses: {
+        Row: {
+          activated_at: string | null
+          allowed_domain: string | null
+          client_name: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          license_key: string
+          notes: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          allowed_domain?: string | null
+          client_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          license_key: string
+          notes?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          allowed_domain?: string | null
+          client_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          license_key?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           agency_id: string | null
