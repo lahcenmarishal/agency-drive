@@ -179,7 +179,7 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
                 <Calculator className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">{t("forms.reservation.estimatedAmount")}</p>
-                  <p className="text-xl font-bold font-display text-primary">{estimatedAmount} MAD</p>
+                  <p className="text-xl font-bold font-display text-primary">${estimatedAmount}</p>
                 </div>
               </div>
             )}

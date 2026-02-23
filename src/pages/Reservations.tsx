@@ -39,7 +39,7 @@ export default function Reservations() {
 
   const handleConfirm = async (id: string) => { await updateReservation.mutateAsync({ id, status: "confirmed" }); };
   const handleConvertToRental = async (id: string) => { await convertToRental.mutateAsync(id); };
-  const canConvert = (reservation: Reservation) => { if (reservation.status !== "confirmed") return false; return new Date(reservation.start_date) <= new Date(); };
+  const canConvert = (reservation: Reservation) => reservation.status === "confirmed";
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">

@@ -163,7 +163,7 @@ export function ClientDetailsDialog({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-primary">{rental.total_amount || 0} MAD</p>
+                      <p className="text-sm font-semibold text-primary">${rental.total_amount || 0}</p>
                       <span className={cn(
                         "text-xs px-2 py-0.5 rounded-full",
                         rental.status === "completed" ? "bg-green-500/15 text-green-400" :
