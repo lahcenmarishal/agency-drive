@@ -7,13 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Car, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function Auth() {
+  const { t } = useTranslation();
   const { user, isLoading, signIn } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
@@ -24,7 +24,7 @@ export default function Auth() {
           <div className="flex h-12 w-12 items-center justify-center rounded-lg premium-gradient animate-pulse">
             <Car className="h-6 w-6 text-primary-foreground" />
           </div>
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -37,90 +37,54 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     const { error } = await signIn(loginEmail, loginPassword);
-
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur de connexion",
-        description: "Email ou mot de passe incorrect.",
-      });
+      toast({ variant: "destructive", title: t("auth.loginError"), description: t("auth.invalidCredentials") });
     } else {
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur AutoRent !",
-      });
+      toast({ title: t("auth.loginSuccess"), description: t("auth.welcome") });
     }
-
     setIsSubmitting(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl premium-gradient mb-4">
             <Car className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="font-display text-3xl font-bold text-foreground">AutoRent</h1>
-          <p className="text-muted-foreground mt-1">Gestion de location de véhicules</p>
+          <p className="text-muted-foreground mt-1">{t("auth.vehicleRentalManagement")}</p>
         </div>
 
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl">Connexion</CardTitle>
-            <CardDescription>
-              Connectez-vous pour accéder à votre espace
-            </CardDescription>
+            <CardTitle className="text-xl">{t("auth.loginTitle")}</CardTitle>
+            <CardDescription>{t("auth.loginDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
+                <Label htmlFor="login-email">{t("auth.email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="votre@email.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
+                  <Input id="login-email" type="email" placeholder={t("auth.emailPlaceholder")} value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="pl-10" required />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-password">Mot de passe</Label>
+                <Label htmlFor="login-password">{t("auth.password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
+                  <Input id="login-password" type="password" placeholder={t("auth.passwordPlaceholder")} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="pl-10" required />
                 </div>
               </div>
-              <Button
-                type="submit"
-                className="w-full premium-gradient hover:opacity-90"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Connexion..." : "Se connecter"}
+              <Button type="submit" className="w-full premium-gradient hover:opacity-90" disabled={isSubmitting}>
+                {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
               </Button>
             </form>
           </CardContent>
         </Card>
-
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Contactez votre administrateur pour obtenir vos identifiants
-        </p>
+        <p className="text-center text-xs text-muted-foreground mt-6">{t("auth.contactAdmin")}</p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DemoRequestForm } from "@/components/landing/DemoRequestForm";
 import { 
   Car, 
@@ -25,10 +26,15 @@ import {
   Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Landing = () => {
-  const whatsappNumber = "+212600000000"; // À personnaliser
-  const whatsappLink = `https://wa.me/${whatsappNumber.replace('+', '')}?text=Bonjour, je souhaite demander une démonstration d'AutoRent Pro.`;
+  const { t } = useTranslation();
+  const whatsappNumber = "+212600000000";
+  const whatsappLink = `https://wa.me/${whatsappNumber.replace('+', '')}?text=Hello, I would like to request a demo of AutoRent Pro.`;
+
+  const problems = t("landing.problems", { returnObjects: true }) as string[];
+  const solutionsList = t("landing.solutionsList", { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -43,21 +49,23 @@ const Landing = () => {
               <span className="text-xl font-display font-bold text-foreground">AutoRent Pro</span>
             </div>
             <div className="hidden md:flex items-center gap-4">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link to="/auth">
-                <Button variant="ghost">Connexion</Button>
+                <Button variant="ghost">{t("nav.login")}</Button>
               </Link>
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
                 <Button className="gap-2">
                   <MessageCircle className="w-4 h-4" />
-                  Contacter
+                  {t("nav.contact")}
                 </Button>
               </a>
             </div>
             <div className="md:hidden flex items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Link to="/auth">
-                <Button size="sm">Connexion</Button>
+                <Button size="sm">{t("nav.login")}</Button>
               </Link>
             </div>
           </div>
@@ -71,20 +79,18 @@ const Landing = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-sm text-primary font-medium">Solution SaaS Premium</span>
+              <span className="text-sm text-primary font-medium">{t("landing.premiumSaas")}</span>
             </div>
             
             <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-6 animate-slide-up leading-tight">
-              AutoRent Pro – La solution intelligente pour la{" "}
+              {t("landing.heroTitle")}{" "}
               <span className="text-primary">
-                gestion des agences de location
-              </span>{" "}
-              de voitures
+                {t("landing.heroTitleHighlight")}
+              </span>
             </h1>
             
             <p className="text-base md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up px-2">
-              Application web permettant de gérer facilement vos agences, véhicules, clients et locations 
-              depuis un seul tableau de bord intuitif et moderne.
+              {t("landing.heroDescription")}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 justify-center animate-slide-up px-2">
@@ -92,8 +98,8 @@ const Landing = () => {
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                  <span className="hidden sm:inline">Contacter via WhatsApp</span>
-                  <span className="sm:hidden">WhatsApp</span>
+                  <span className="hidden sm:inline">{t("landing.contactWhatsApp")}</span>
+                  <span className="sm:hidden">{t("landing.whatsapp")}</span>
                 </Button>
               </a>
             </div>
@@ -110,10 +116,10 @@ const Landing = () => {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   {[
-                    { label: "Véhicules", value: "48", color: "bg-info/20 text-info" },
-                    { label: "Clients", value: "156", color: "bg-success/20 text-success" },
-                    { label: "Locations actives", value: "23", color: "bg-primary/20 text-primary" },
-                    { label: "Revenus", value: "125K DH", color: "bg-accent text-foreground" },
+                    { label: t("landing.mockStats.vehicles"), value: "48", color: "bg-info/20 text-info" },
+                    { label: t("landing.mockStats.clients"), value: "156", color: "bg-success/20 text-success" },
+                    { label: t("landing.mockStats.activeRentals"), value: "23", color: "bg-primary/20 text-primary" },
+                    { label: t("landing.mockStats.revenue"), value: "125K DH", color: "bg-accent text-foreground" },
                   ].map((stat, i) => (
                     <div key={i} className={`p-4 rounded-lg ${stat.color}`}>
                       <p className="text-xs opacity-70">{stat.label}</p>
@@ -134,23 +140,16 @@ const Landing = () => {
       <section className="py-16 md:py-24 px-4 bg-muted/20">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-start">
-            {/* Problems */}
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10 border border-destructive/20 mb-4">
                 <AlertTriangle className="w-4 h-4 text-destructive" />
-                <span className="text-sm text-destructive font-medium">Défis courants</span>
+                <span className="text-sm text-destructive font-medium">{t("landing.commonChallenges")}</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
-                Les défis rencontrés par les agences de location
+                {t("landing.challengesTitle")}
               </h2>
               <div className="space-y-4">
-                {[
-                  "Mauvaise organisation et perte d'informations",
-                  "Difficulté de suivi des véhicules en temps réel",
-                  "Retards de retour non contrôlés",
-                  "Perte de temps et d'argent significative",
-                  "Gestion manuelle chronophage",
-                ].map((problem, i) => (
+                {problems.map((problem, i) => (
                   <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-destructive/5 border border-destructive/10">
                     <div className="w-6 h-6 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-destructive text-sm font-bold">✕</span>
@@ -160,24 +159,16 @@ const Landing = () => {
                 ))}
               </div>
             </div>
-
-            {/* Solutions */}
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/20 mb-4">
                 <CheckCircle2 className="w-4 h-4 text-success" />
-                <span className="text-sm text-success font-medium">Solutions</span>
+                <span className="text-sm text-success font-medium">{t("landing.solutions")}</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">
-                AutoRent Pro apporte la solution
+                {t("landing.solutionsTitle")}
               </h2>
               <div className="space-y-4">
-                {[
-                  "Gestion centralisée de toutes vos opérations",
-                  "Tableau de bord clair et intuitif",
-                  "Alertes automatiques et notifications",
-                  "Gain de temps et meilleure productivité",
-                  "Rapports détaillés et analyses en temps réel",
-                ].map((solution, i) => (
+                {solutionsList.map((solution, i) => (
                   <div key={i} className="flex items-start gap-3 p-4 rounded-lg bg-success/5 border border-success/10">
                     <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <CheckCircle2 className="w-4 h-4 text-success" />
@@ -196,29 +187,29 @@ const Landing = () => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Fonctionnalités principales
+              {t("landing.mainFeatures")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Tout ce dont vous avez besoin pour gérer efficacement votre agence de location
+              {t("landing.featuresSubtitle")}
             </p>
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Building2, title: "Gestion multi-agences", desc: "Gérez plusieurs agences depuis un seul compte administrateur" },
-              { icon: Car, title: "Gestion du parc automobile", desc: "Suivi complet de vos véhicules : état, disponibilité, documents" },
-              { icon: Users, title: "Gestion des clients", desc: "Base de données clients avec historique et liste noire" },
-              { icon: Calendar, title: "Réservations et locations", desc: "Planification intuitive et suivi des contrats de location" },
-              { icon: BarChart3, title: "Tableaux de bord Admin/Agent", desc: "Statistiques et rapports pour une vision claire de l'activité" },
-              { icon: Clock, title: "Alertes et suivi temps réel", desc: "Notifications automatiques pour documents et retards" },
+              { icon: Building2, key: "multiAgency" },
+              { icon: Car, key: "fleet" },
+              { icon: Users, key: "clients" },
+              { icon: Calendar, key: "reservations" },
+              { icon: BarChart3, key: "dashboards" },
+              { icon: Clock, key: "alerts" },
             ].map((feature, i) => (
               <Card key={i} className="group hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <CardContent className="p-6">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                     <feature.icon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.desc}</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t(`landing.features.${feature.key}.title`)}</h3>
+                  <p className="text-muted-foreground text-sm">{t(`landing.features.${feature.key}.desc`)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -231,30 +222,26 @@ const Landing = () => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Comment ça fonctionne ?
+              {t("landing.howItWorks")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Démarrez en 3 étapes simples
+              {t("landing.getStarted3Steps")}
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {[
-              { step: "1", title: "Demande de démonstration", desc: "Contactez-nous via WhatsApp ou le formulaire pour planifier une démo personnalisée" },
-              { step: "2", title: "Création du compte", desc: "Nous configurons votre espace avec vos agences et paramètres personnalisés" },
-              { step: "3", title: "Utilisation immédiate", desc: "Commencez à gérer vos locations dès le premier jour avec notre support" },
-            ].map((item, i) => (
+            {["step1", "step2", "step3"].map((step, i) => (
               <div key={i} className="text-center relative">
                 <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-primary-foreground shadow-lg">
-                  {item.step}
+                  {i + 1}
                 </div>
                 {i < 2 && (
                   <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-border">
                     <ArrowRight className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                 )}
-                <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-muted-foreground text-sm">{item.desc}</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t(`landing.steps.${step}.title`)}</h3>
+                <p className="text-muted-foreground text-sm">{t(`landing.steps.${step}.desc`)}</p>
               </div>
             ))}
           </div>
@@ -266,23 +253,23 @@ const Landing = () => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground mb-4">
-              À qui s'adresse l'application ?
+              {t("landing.targetAudience")}
             </h2>
           </div>
           
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { icon: Car, title: "Agences de location", desc: "De toute taille, débutantes ou établies" },
-              { icon: Building2, title: "PME", desc: "Petites et moyennes entreprises du secteur" },
-              { icon: Globe, title: "Multi-agences", desc: "Entreprises avec une ou plusieurs agences" },
+              { icon: Car, key: "agencies" },
+              { icon: Building2, key: "sme" },
+              { icon: Globe, key: "multi" },
             ].map((item, i) => (
               <Card key={i} className="text-center hover:border-primary/50 transition-all">
                 <CardContent className="p-6">
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <item.icon className="w-7 h-7 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.desc}</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t(`landing.audiences.${item.key}.title`)}</h3>
+                  <p className="text-muted-foreground text-sm">{t(`landing.audiences.${item.key}.desc`)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -295,26 +282,26 @@ const Landing = () => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Pourquoi choisir AutoRent Pro ?
+              {t("landing.whyChoose")}
             </h2>
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { icon: Smartphone, title: "Interface moderne et premium", desc: "Design élégant adapté à tous les écrans" },
-              { icon: CheckCircle2, title: "Facile à utiliser", desc: "Prise en main rapide, aucune formation requise" },
-              { icon: Shield, title: "Sécurisée", desc: "Vos données sont protégées et sauvegardées" },
-              { icon: MapPin, title: "Adaptée au marché marocain", desc: "Conçue pour les besoins locaux" },
-              { icon: HeadphonesIcon, title: "Support client disponible", desc: "Assistance réactive via WhatsApp" },
-              { icon: BarChart3, title: "Rapports complets", desc: "Statistiques détaillées pour vos décisions" },
+              { icon: Smartphone, key: "modern" },
+              { icon: CheckCircle2, key: "easyToUse" },
+              { icon: Shield, key: "secure" },
+              { icon: MapPin, key: "localMarket" },
+              { icon: HeadphonesIcon, key: "support" },
+              { icon: BarChart3, key: "reports" },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-card border border-border hover:border-primary/30 transition-all">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <item.icon className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.desc}</p>
+                  <h3 className="font-semibold text-foreground mb-1">{t(`landing.advantages.${item.key}.title`)}</h3>
+                  <p className="text-muted-foreground text-sm">{t(`landing.advantages.${item.key}.desc`)}</p>
                 </div>
               </div>
             ))}
@@ -329,56 +316,46 @@ const Landing = () => {
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm text-primary font-medium">Tarification</span>
+                <span className="text-sm text-primary font-medium">{t("landing.pricing")}</span>
               </div>
               <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground mb-4">
-                Une tarification annuelle simple et personnalisée
+                {t("landing.pricingTitle")}
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-lg px-2">
-                AutoRent Pro fonctionne sur un modèle d'abonnement annuel.{" "}
-                Le tarif dépend de la taille de votre agence, du nombre d'agences, du nombre d'agents et des fonctionnalités souhaitées.{" "}
-                <span className="text-foreground font-medium">Le prix exact est communiqué après une démonstration gratuite de l'application.</span>
+                {t("landing.pricingDescription")}{" "}
+                <span className="text-foreground font-medium">{t("landing.pricingExact")}</span>
               </p>
             </div>
 
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
               <CardContent className="p-5 sm:p-8 md:p-10">
-                {/* Points clés - affichage vertical sur mobile */}
                 <div className="space-y-3 sm:space-y-4 mb-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    {[
-                      { text: "Abonnement annuel" },
-                      { text: "Offre personnalisée" },
-                      { text: "Support inclus" },
-                      { text: "Mises à jour continues" },
-                      { text: "Sans frais cachés" },
-                    ].map((item, i) => (
+                    {["annual", "custom", "support", "updates", "noHidden"].map((key, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/50">
                         <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
                           <BadgeCheck className="w-4 h-4 text-success" />
                         </div>
-                        <span className="text-foreground font-medium text-sm sm:text-base">{item.text}</span>
+                        <span className="text-foreground font-medium text-sm sm:text-base">{t(`landing.pricingPoints.${key}`)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* CTA - centré sur tous les écrans */}
                 <div className="flex justify-center">
                   <div className="w-full max-w-md p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-lg text-center">
                     <p className="text-muted-foreground mb-4 text-sm">
-                      Découvrez notre solution adaptée à vos besoins
+                      {t("landing.discoverSolution")}
                     </p>
                     <DemoRequestForm className="w-full" />
                   </div>
                 </div>
 
-                {/* Réassurance */}
                 <div className="mt-8 pt-6 border-t border-border/50">
                   <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/10">
                     <Shield className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">Transparence totale :</span> une offre claire et détaillée vous est proposée après la démonstration, en fonction de vos besoins réels.
+                      <span className="font-semibold text-foreground">{t("landing.transparency")}</span> {t("landing.transparencyDesc")}
                     </p>
                   </div>
                 </div>
@@ -396,17 +373,17 @@ const Landing = () => {
               <Car className="w-8 h-8 text-primary-foreground" />
             </div>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4">
-              Essayez AutoRent Pro et simplifiez la gestion de votre agence
+              {t("landing.finalCTA")}
             </h2>
             <p className="text-muted-foreground mb-8">
-              Rejoignez les agences qui ont déjà optimisé leur gestion avec notre solution
+              {t("landing.finalCTADesc")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <DemoRequestForm className="w-full sm:w-auto text-sm sm:text-base px-4 sm:px-8" />
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto text-sm sm:text-base px-4 sm:px-8">
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                  <span className="truncate">Contact WhatsApp</span>
+                  <span className="truncate">{t("landing.contactWhatsAppShort")}</span>
                 </Button>
               </a>
             </div>
@@ -426,12 +403,12 @@ const Landing = () => {
                 <span className="text-xl font-display font-bold text-foreground">AutoRent Pro</span>
               </div>
               <p className="text-muted-foreground text-sm">
-                La solution intelligente pour la gestion des agences de location de voitures au Maroc.
+                {t("landing.footer.description")}
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Contact</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t("landing.footer.contact")}</h4>
               <div className="space-y-3">
                 <a href={`mailto:contact@autorentpro.ma`} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm">
                   <Mail className="w-4 h-4" />
@@ -445,13 +422,13 @@ const Landing = () => {
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Accès rapide</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t("landing.footer.quickAccess")}</h4>
               <div className="space-y-3">
                 <Link to="/auth" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Connexion
+                  {t("nav.login")}
                 </Link>
                 <span className="block text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
-                  Demander une démo gratuite
+                  {t("landing.footer.requestFreeDemo")}
                 </span>
               </div>
             </div>
@@ -459,7 +436,7 @@ const Landing = () => {
           
           <div className="pt-8 border-t border-border text-center">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} AutoRent Pro. Tous droits réservés.
+              © {new Date().getFullYear()} AutoRent Pro. {t("landing.footer.allRightsReserved")}
             </p>
           </div>
         </div>
