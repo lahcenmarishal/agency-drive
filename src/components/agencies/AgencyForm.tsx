@@ -17,17 +17,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 import type { Agency } from "@/hooks/useAgencies";
 
-const agencySchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email("Email invalide").optional().or(z.literal("")),
-});
-
-type AgencyFormData = z.infer<typeof agencySchema>;
+type AgencyFormData = {
+  name: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+};
 
 interface AgencyFormProps {
   open: boolean;
@@ -44,6 +43,16 @@ export function AgencyForm({
   defaultValues,
   isLoading,
 }: AgencyFormProps) {
+  const { t } = useTranslation();
+
+  const agencySchema = z.object({
+    name: z.string().min(2, t("forms.validation.nameMin2")),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().email(t("forms.validation.invalidEmail")).optional().or(z.literal("")),
+  });
+
   const form = useForm<AgencyFormData>({
     resolver: zodResolver(agencySchema),
     defaultValues: {
@@ -67,7 +76,7 @@ export function AgencyForm({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {defaultValues ? "Modifier l'agence" : "Nouvelle agence"}
+            {defaultValues ? t("forms.agency.editTitle") : t("forms.agency.newTitle")}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -80,9 +89,9 @@ export function AgencyForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom de l'agence *</FormLabel>
+                  <FormLabel>{t("forms.agency.agencyName")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Agence Casablanca" {...field} />
+                    <Input placeholder={t("forms.agency.agencyNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -95,9 +104,9 @@ export function AgencyForm({
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ville</FormLabel>
+                    <FormLabel>{t("forms.city")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Casablanca" {...field} />
+                      <Input placeholder={t("forms.cityPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -109,9 +118,9 @@ export function AgencyForm({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Téléphone</FormLabel>
+                    <FormLabel>{t("forms.phone")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="+212 5XX XX XX XX" {...field} />
+                      <Input placeholder={t("forms.agency.phonePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -124,10 +133,10 @@ export function AgencyForm({
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Adresse</FormLabel>
+                  <FormLabel>{t("forms.address")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="123 Boulevard Mohammed V"
+                      placeholder={t("forms.agency.addressPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -141,11 +150,11 @@ export function AgencyForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("forms.email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="contact@agence.ma"
+                      placeholder={t("forms.agency.emailPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -160,14 +169,14 @@ export function AgencyForm({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Annuler
+                {t("forms.cancel")}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? "Enregistrement..."
+                  ? t("forms.saving")
                   : defaultValues
-                  ? "Modifier"
-                  : "Créer"}
+                  ? t("forms.edit")
+                  : t("forms.create")}
               </Button>
             </div>
           </form>

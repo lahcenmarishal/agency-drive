@@ -465,5 +465,73 @@
       "admin": "Agency Admin",
       "agent": "Employee"
     }
+  },
+  "forms": {
+    "fullName": "Full name *",
+    "fullNamePlaceholder": "First and last name",
+    "phone": "Phone",
+    "phonePlaceholder": "+212 6 XX XX XX XX",
+    "email": "Email",
+    "emailPlaceholder": "email@example.com",
+    "cancel": "Cancel",
+    "add": "Add",
+    "edit": "Edit",
+    "saving": "Saving...",
+    "create": "Create",
+    "save": "Save",
+    "active": "Active",
+    "city": "City",
+    "cityPlaceholder": "Casablanca",
+    "address": "Address",
+    "addressPlaceholder": "123 Example Street",
+    "driver": {
+      "licenseNumber": "License number",
+      "licenseExpiry": "Expiry date",
+      "activeDesc": "Driver is available for assignments"
+    },
+    "employee": {
+      "agency": "Agency *",
+      "selectAgency": "Select an agency",
+      "position": "Position",
+      "selectPosition": "Select a position",
+      "hireDate": "Hire date",
+      "activeDesc": "Employee can access the system",
+      "createAccount": "Create user account",
+      "createAccountLabel": "Create account",
+      "createAccountDesc": "Allow this employee to log in to the application",
+      "accountEmail": "Account email *",
+      "accountPassword": "Password *",
+      "passwordPlaceholder": "Min. 6 characters",
+      "accountValidation": "Email and password required to create an account (min 6 characters)"
+    },
+    "agency": {
+      "agencyName": "Agency name *",
+      "agencyNamePlaceholder": "Agency Casablanca",
+      "phonePlaceholder": "+212 5XX XX XX XX",
+      "addressPlaceholder": "123 Boulevard Mohammed V",
+      "emailPlaceholder": "contact@agency.com",
+      "editTitle": "Edit agency",
+      "newTitle": "New agency"
+    },
+    "client": {
+      "namePlaceholder": "Mohammed Alami",
+      "personalInfo": "Personal information",
+      "documents": "Documents",
+      "idNumber": "ID Number",
+      "idNumberPlaceholder": "AB123456",
+      "licenseNumber": "Driver's license #",
+      "licenseNumberPlaceholder": "12345678",
+      "addressSection": "Address",
+      "internalNotes": "Internal notes",
+      "notesPlaceholder": "Notes visible only to staff...",
+      "editTitle": "Edit client",
+      "newTitle": "New client"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMin2": "Name must be at least 2 characters",
+      "invalidEmail": "Invalid email",
+      "agencyRequired": "Agency is required"
+    }
   }
 }
