@@ -115,7 +115,7 @@ export function VehicleCard({ vehicle, onEdit, hasDocumentAlert }: VehicleCardPr
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div>
             <p className="text-xl font-bold font-display text-primary">
-              {vehicle.daily_rate || 0} MAD
+              ${vehicle.daily_rate || 0}
             </p>
             <p className="text-xs text-muted-foreground">par jour</p>
           </div>

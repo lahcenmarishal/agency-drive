@@ -61,7 +61,7 @@ export function CategoryBreakdown({ type, month }: CategoryBreakdownProps) {
               border: "1px solid hsl(var(--border))",
               borderRadius: "8px",
             }}
-            formatter={(value: number) => [`${value.toLocaleString()} MAD`, ""]}
+            formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
           />
           <Legend
             layout="vertical"

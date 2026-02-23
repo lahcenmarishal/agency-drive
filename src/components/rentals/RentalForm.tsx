@@ -202,7 +202,7 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
                 <Calculator className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">{t("forms.rental.totalAmount")}</p>
-                  <p className="text-xl font-bold font-display text-primary">{totalAmount} MAD</p>
+                  <p className="text-xl font-bold font-display text-primary">${totalAmount}</p>
                 </div>
               </div>
             )}

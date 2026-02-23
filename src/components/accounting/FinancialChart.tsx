@@ -41,7 +41,7 @@ export function FinancialChart() {
               borderRadius: "8px",
             }}
             labelStyle={{ color: "hsl(var(--foreground))" }}
-            formatter={(value: number) => [`${value.toLocaleString()} MAD`, ""]}
+            formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
           />
           <Legend />
           <Area

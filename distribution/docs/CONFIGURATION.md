@@ -39,7 +39,7 @@ The dark theme is also configurable in the same file under `.dark { }`.
 
 ### Currency
 
-To change the currency (default MAD — Moroccan Dirham), search for `MAD` in the accounting and rental component files.
+The default currency is USD (US Dollar). To change it, search for `$` in the accounting and rental component files.
 
 ---
 
