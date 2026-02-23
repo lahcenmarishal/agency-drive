@@ -154,13 +154,10 @@ export function useCancelReservation() {
 // Convertir une réservation en location
 export function useConvertToRental() {
   const queryClient = useQueryClient();
-  const { agencyId } = useAgencyFilter();
 
   return useMutation({
     mutationFn: async (reservationId: string) => {
-      if (!agencyId) throw new Error("Agency ID required");
-      
-      // Récupérer la réservation
+      // Récupérer la réservation avec ses données
       const { data: reservation, error: fetchError } = await supabase
         .from("reservations")
         .select(`
@@ -184,7 +181,7 @@ export function useConvertToRental() {
       const { data: rental, error: rentalError } = await supabase
         .from("rentals")
         .insert({
-          agency_id: agencyId,
+          agency_id: reservation.agency_id,
           reservation_id: reservationId,
           vehicle_id: reservation.vehicle_id,
           client_id: reservation.client_id,
