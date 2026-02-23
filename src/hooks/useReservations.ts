@@ -50,11 +50,23 @@ export function useCreateReservation() {
 
   return useMutation({
     mutationFn: async (reservation: Omit<ReservationInsert, "agency_id">) => {
-      if (!agencyId) throw new Error("Agency ID required");
+      let resolvedAgencyId = agencyId;
+      
+      // For super admins without selected agency, get agency from the vehicle
+      if (!resolvedAgencyId && reservation.vehicle_id) {
+        const { data: vehicle } = await supabase
+          .from("vehicles")
+          .select("agency_id")
+          .eq("id", reservation.vehicle_id)
+          .single();
+        resolvedAgencyId = vehicle?.agency_id || null;
+      }
+      
+      if (!resolvedAgencyId) throw new Error("Agency ID required");
       
       const { data, error } = await supabase
         .from("reservations")
-        .insert({ ...reservation, agency_id: agencyId })
+        .insert({ ...reservation, agency_id: resolvedAgencyId })
         .select()
         .single();
       
