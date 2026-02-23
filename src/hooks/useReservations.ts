@@ -178,6 +178,16 @@ export function useConvertToRental() {
       const totalAmount = days * dailyRate;
       
       // Créer la location
+      console.log("Converting reservation to rental:", {
+        agency_id: reservation.agency_id,
+        reservation_id: reservationId,
+        vehicle_id: reservation.vehicle_id,
+        client_id: reservation.client_id,
+        dailyRate,
+        totalAmount,
+        days,
+      });
+      
       const { data: rental, error: rentalError } = await supabase
         .from("rentals")
         .insert({
@@ -194,7 +204,10 @@ export function useConvertToRental() {
         .select()
         .single();
       
-      if (rentalError) throw rentalError;
+      if (rentalError) {
+        console.error("Rental insert error:", rentalError);
+        throw rentalError;
+      }
       
       // Mettre à jour la réservation
       await supabase
