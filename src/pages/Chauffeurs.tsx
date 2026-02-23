@@ -32,9 +32,12 @@ import {
   type Driver,
 } from "@/hooks/useDrivers";
 import { format, isAfter, addDays } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 export default function Chauffeurs() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : enUS;
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
@@ -90,14 +93,14 @@ export default function Chauffeurs() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold font-display">Chauffeurs</h1>
+          <h1 className="text-2xl md:text-3xl font-bold font-display">{t("drivers.title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            Gérez vos chauffeurs professionnels
+            {t("drivers.subtitle")}
           </p>
         </div>
         <Button className="gap-2 w-full sm:w-auto" onClick={() => setIsFormOpen(true)}>
           <Plus className="h-4 w-4" />
-          Ajouter un chauffeur
+          {t("drivers.addDriver")}
         </Button>
       </div>
 
@@ -106,13 +109,15 @@ export default function Chauffeurs() {
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2 text-amber-500 mb-2">
             <AlertTriangle className="h-5 w-5" />
-            <span className="font-semibold">Alertes permis</span>
+            <span className="font-semibold">{t("drivers.licenseAlerts")}</span>
           </div>
           <ul className="space-y-1">
             {licenseAlerts.map((driver) => (
               <li key={driver.id} className="text-sm text-muted-foreground">
-                Le permis de <span className="font-medium text-foreground">{driver.full_name}</span> expire le{" "}
-                {format(new Date(driver.license_expiry!), "d MMMM yyyy", { locale: fr })}
+                {t("drivers.licenseExpiry", {
+                  name: driver.full_name,
+                  date: format(new Date(driver.license_expiry!), "d MMMM yyyy", { locale: dateLocale }),
+                })}
               </li>
             ))}
           </ul>
@@ -123,7 +128,7 @@ export default function Chauffeurs() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Rechercher un chauffeur..."
+          placeholder={t("drivers.searchPlaceholder")}
           className="pl-10 bg-muted/30 border-border"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -140,10 +145,8 @@ export default function Chauffeurs() {
       ) : filteredDrivers?.length === 0 ? (
         <div className="text-center py-12">
           <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium">Aucun chauffeur</h3>
-          <p className="text-muted-foreground mt-1">
-            Commencez par ajouter un chauffeur
-          </p>
+          <h3 className="text-lg font-medium">{t("drivers.noDrivers")}</h3>
+          <p className="text-muted-foreground mt-1">{t("drivers.startAdding")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -157,20 +160,18 @@ export default function Chauffeurs() {
                   {chauffeur.is_active ? (
                     <Badge variant="outline" className="bg-green-500/15 text-green-400 border-green-500/30">
                       <CheckCircle className="h-3 w-3 mr-1" />
-                      Actif
+                      {t("common.active")}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="bg-red-500/15 text-red-400 border-red-500/30">
                       <XCircle className="h-3 w-3 mr-1" />
-                      Inactif
+                      {t("common.inactive")}
                     </Badge>
                   )}
                 </div>
               </div>
               
-              <h3 className="text-lg font-semibold font-display mb-1">
-                {chauffeur.full_name}
-              </h3>
+              <h3 className="text-lg font-semibold font-display mb-1">{chauffeur.full_name}</h3>
               
               {chauffeur.phone && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -184,7 +185,7 @@ export default function Chauffeurs() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <FileCheck className="h-4 w-4" />
-                      <span>Permis</span>
+                      <span>{t("drivers.license")}</span>
                     </div>
                     <span className="font-medium">{chauffeur.license_number}</span>
                   </div>
@@ -194,7 +195,7 @@ export default function Chauffeurs() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>Expiration</span>
+                      <span>{t("drivers.expiry")}</span>
                     </div>
                     <span
                       className={cn(
@@ -216,21 +217,16 @@ export default function Chauffeurs() {
               </div>
 
               <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setEditingDriver(chauffeur)}
-                >
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => setEditingDriver(chauffeur)}>
                   <Edit2 className="h-3.5 w-3.5 mr-1" />
-                  Modifier
+                  {t("common.modify")}
                 </Button>
                 <Button
                   size="sm"
                   variant={chauffeur.is_active ? "outline" : "default"}
                   onClick={() => toggleStatus.mutate({ id: chauffeur.id, is_active: !chauffeur.is_active })}
                 >
-                  {chauffeur.is_active ? "Désactiver" : "Activer"}
+                  {chauffeur.is_active ? t("dashboard.deactivate") : t("dashboard.activate")}
                 </Button>
                 <Button
                   size="sm"
@@ -250,7 +246,7 @@ export default function Chauffeurs() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Ajouter un chauffeur</DialogTitle>
+            <DialogTitle>{t("drivers.addDriverTitle")}</DialogTitle>
           </DialogHeader>
           <DriverForm
             onSubmit={handleCreate}
@@ -264,7 +260,7 @@ export default function Chauffeurs() {
       <Dialog open={!!editingDriver} onOpenChange={() => setEditingDriver(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Modifier le chauffeur</DialogTitle>
+            <DialogTitle>{t("drivers.editDriver")}</DialogTitle>
           </DialogHeader>
           <DriverForm
             driver={editingDriver}
@@ -279,18 +275,18 @@ export default function Chauffeurs() {
       <AlertDialog open={!!deletingDriver} onOpenChange={() => setDeletingDriver(null)}>
         <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer le chauffeur ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("drivers.deleteDriver")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le chauffeur "{deletingDriver?.full_name}" sera supprimé définitivement.
+              {t("drivers.deleteDriverDesc", { name: deletingDriver?.full_name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

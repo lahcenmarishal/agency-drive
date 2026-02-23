@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAgencyFilter } from "@/hooks/useAgencyFilter";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useTranslation } from "react-i18next";
 
 export function BlacklistNotes() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : enUS;
   const { data: clients, isLoading: clientsLoading } = useClients(true);
   const { filterByAgency, agencyId } = useAgencyFilter();
   const queryClient = useQueryClient();
@@ -57,10 +60,10 @@ export function BlacklistNotes() {
       setNoteDialogOpen(false);
       setNoteTitle("");
       setNoteContent("");
-      toast.success("Note ajoutée");
+      toast.success(t("dashboard.noteAdded"));
     },
     onError: () => {
-      toast.error("Erreur lors de l'ajout");
+      toast.error(t("dashboard.noteError"));
     },
   });
 
@@ -95,7 +98,7 @@ export function BlacklistNotes() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Ban className="h-5 w-5 text-red-400" />
-            <h3 className="section-title">Blacklist</h3>
+            <h3 className="section-title">{t("dashboard.blacklist")}</h3>
           </div>
           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400">
             {blacklistedClients.length}
@@ -115,27 +118,27 @@ export function BlacklistNotes() {
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-medium">{client.full_name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(client.updated_at), "dd/MM/yyyy", { locale: fr })}
+                    {format(new Date(client.updated_at), "dd/MM/yyyy", { locale: dateLocale })}
                   </p>
                 </div>
-                <p className="text-xs text-red-400">{client.blacklist_reason || "Raison non spécifiée"}</p>
+                <p className="text-xs text-red-400">{client.blacklist_reason || t("dashboard.reasonNotSpecified")}</p>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
             <Ban className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-sm">Aucun client blacklisté</p>
+            <p className="text-sm">{t("dashboard.noBlacklisted")}</p>
           </div>
         )}
       </div>
 
-      {/* Notes internes */}
+      {/* Internal Notes */}
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <StickyNote className="h-5 w-5 text-primary" />
-            <h3 className="section-title">Notes internes</h3>
+            <h3 className="section-title">{t("dashboard.internalNotes")}</h3>
           </div>
           <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => setNoteDialogOpen(true)}>
             <Plus className="h-4 w-4" />
@@ -173,7 +176,7 @@ export function BlacklistNotes() {
         ) : (
           <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
             <StickyNote className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-sm">Aucune note</p>
+            <p className="text-sm">{t("dashboard.noNotes")}</p>
           </div>
         )}
       </div>
@@ -182,35 +185,35 @@ export function BlacklistNotes() {
       <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-display">Nouvelle note</DialogTitle>
+            <DialogTitle className="font-display">{t("dashboard.newNote")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="note-title">Titre</Label>
+              <Label htmlFor="note-title">{t("dashboard.noteTitle")}</Label>
               <Input
                 id="note-title"
                 value={noteTitle}
                 onChange={(e) => setNoteTitle(e.target.value)}
-                placeholder="Titre de la note"
+                placeholder={t("dashboard.noteTitlePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="note-content">Contenu (optionnel)</Label>
+              <Label htmlFor="note-content">{t("dashboard.noteContent")}</Label>
               <Textarea
                 id="note-content"
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Détails supplémentaires..."
+                placeholder={t("dashboard.noteContentPlaceholder")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNoteDialogOpen(false)}>
-              Annuler
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleSubmitNote} disabled={!noteTitle.trim() || createNote.isPending}>
               {createNote.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Ajouter
+              {t("common.add")}
             </Button>
           </DialogFooter>
         </DialogContent>

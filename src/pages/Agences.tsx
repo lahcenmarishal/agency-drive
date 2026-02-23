@@ -40,8 +40,10 @@ import {
   type Agency,
 } from "@/hooks/useAgencies";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function Agences() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
@@ -81,16 +83,16 @@ export default function Agences() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-display">Agences</h1>
+          <h1 className="text-3xl font-bold font-display">{t("agencies.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            {isSuperAdmin ? "Gérez toutes les agences" : "Vos agences de location"}
+            {isSuperAdmin ? t("agencies.subtitleSuper") : t("agencies.subtitleAdmin")}
           </p>
         </div>
         {/* Only super admin can create new agencies */}
         {isSuperAdmin && (
           <Button className="gap-2" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />
-            Nouvelle agence
+            {t("agencies.newAgency")}
           </Button>
         )}
       </div>
@@ -113,16 +115,16 @@ export default function Agences() {
       {!isLoading && agencies?.length === 0 && (
         <div className="text-center py-12">
           <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Aucune agence</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("agencies.noAgencies")}</h3>
           <p className="text-muted-foreground mb-4">
             {isSuperAdmin 
-              ? "Commencez par créer votre première agence"
-              : "Aucune agence ne vous est assignée"}
+              ? t("agencies.startCreating")
+              : t("agencies.noAgenciesAssigned")}
           </p>
           {isSuperAdmin && (
             <Button onClick={() => setFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Nouvelle agence
+              {t("agencies.newAgency")}
             </Button>
           )}
         </div>
@@ -158,7 +160,7 @@ export default function Agences() {
                       }}
                     >
                       <Eye className="h-4 w-4 mr-2" />
-                      Voir détails
+                      {t("common.viewDetails")}
                     </DropdownMenuItem>
                     {/* Only super admin can edit/delete agencies */}
                     {isSuperAdmin && (
@@ -170,7 +172,7 @@ export default function Agences() {
                           }}
                         >
                           <Pencil className="h-4 w-4 mr-2" />
-                          Modifier
+                          {t("common.modify")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive"
@@ -180,7 +182,7 @@ export default function Agences() {
                           }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Supprimer
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -218,11 +220,11 @@ export default function Agences() {
               <div className="flex items-center gap-4 pt-4 border-t border-border">
                 <div className="flex items-center gap-2 text-sm">
                   <Car className="h-4 w-4 text-primary" />
-                  <span>{agence.vehicleCount} véhicules</span>
+                  <span>{t("agencies.vehiclesCount", { count: agence.vehicleCount })}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="h-4 w-4 text-primary" />
-                  <span>{agence.employeeCount} employés</span>
+                  <span>{t("agencies.employeesCount", { count: agence.employeeCount })}</span>
                 </div>
               </div>
             </div>
@@ -254,19 +256,16 @@ export default function Agences() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette agence ? Cette action est
-              irréversible et supprimera également toutes les données associées.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("agencies.deleteAgency")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("agencies.deleteAgencyDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteAgency.isPending ? "Suppression..." : "Supprimer"}
+              {deleteAgency.isPending ? t("agencies.deleting") : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

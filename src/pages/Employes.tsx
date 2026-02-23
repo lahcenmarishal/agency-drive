@@ -30,26 +30,15 @@ import {
   type Employee,
 } from "@/hooks/useEmployees";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { useAgencyFilterContext } from "@/contexts/AgencyFilterContext";
 import { useAgencies } from "@/hooks/useAgencies";
 import { useAuth } from "@/contexts/AuthContext";
-
-const positionLabels: Record<string, string> = {
-  admin: "Administrateur",
-  agent: "Agent",
-  comptable: "Comptable",
-  responsable: "Responsable Agence",
-};
-
-const positionClasses: Record<string, string> = {
-  admin: "bg-primary/15 text-primary",
-  agent: "bg-blue-500/15 text-blue-400",
-  comptable: "bg-amber-500/15 text-amber-400",
-  responsable: "bg-purple-500/15 text-purple-400",
-};
+import { useTranslation } from "react-i18next";
 
 export default function Employes() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : enUS;
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -96,39 +85,36 @@ export default function Employes() {
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold font-display">Employés</h1>
+          <h1 className="text-2xl md:text-3xl font-bold font-display">{t("employees.title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            {employees?.length || 0} employés
+            {t("employees.employeesCount", { count: employees?.length || 0 })}
             {selectedAgencyName && (
               <span className="ml-1">
                 • <Building2 className="inline h-3.5 w-3.5 mr-1" />
                 {selectedAgencyName}
               </span>
             )}
-            {!selectedAgencyName && isAdmin && " dans toutes les agences"}
+            {!selectedAgencyName && isAdmin && ` ${t("common.inAllAgencies")}`}
           </p>
         </div>
         <Button className="gap-2 w-full sm:w-auto" onClick={() => setIsFormOpen(true)}>
           <Plus className="h-4 w-4" />
-          Ajouter un employé
+          {t("employees.addEmployee")}
         </Button>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Rechercher un employé..."
+          placeholder={t("employees.searchPlaceholder")}
           className="pl-10 bg-muted/30 border-border"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* Employees Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -138,10 +124,8 @@ export default function Employes() {
       ) : filteredEmployees?.length === 0 ? (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium">Aucun employé</h3>
-          <p className="text-muted-foreground mt-1">
-            Commencez par ajouter un employé
-          </p>
+          <h3 className="text-lg font-medium">{t("employees.noEmployees")}</h3>
+          <p className="text-muted-foreground mt-1">{t("employees.startAdding")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -155,19 +139,20 @@ export default function Employes() {
                   <span
                     className={cn(
                       "px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
-                      positionClasses[employe.position || "agent"] || positionClasses.agent
+                      employe.position === "admin" ? "bg-primary/15 text-primary" :
+                      employe.position === "comptable" ? "bg-amber-500/15 text-amber-400" :
+                      employe.position === "responsable" ? "bg-purple-500/15 text-purple-400" :
+                      "bg-blue-500/15 text-blue-400"
                     )}
                   >
                     <Shield className="h-3 w-3" />
-                    {positionLabels[employe.position || "agent"] || employe.position}
+                    {t(`employees.positions.${employe.position || "agent"}`)}
                   </span>
                 </div>
               </div>
               
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-semibold font-display">
-                  {employe.full_name}
-                </h3>
+                <h3 className="text-lg font-semibold font-display">{employe.full_name}</h3>
                 {employe.is_active ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : (
@@ -177,7 +162,7 @@ export default function Employes() {
               
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                 <Building2 className="h-4 w-4" />
-                <span>{(employe as any).agencies?.name || "Agence"}</span>
+                <span>{(employe as any).agencies?.name || t("agencies.title")}</span>
               </div>
               
               <div className="space-y-2 pt-4 border-t border-border">
@@ -195,27 +180,24 @@ export default function Employes() {
                 )}
                 {employe.hire_date && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    Embauché le {format(new Date(employe.hire_date), "d MMMM yyyy", { locale: fr })}
+                    {t("employees.hiredOn", {
+                      date: format(new Date(employe.hire_date), "d MMMM yyyy", { locale: dateLocale }),
+                    })}
                   </p>
                 )}
               </div>
 
               <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setEditingEmployee(employe)}
-                >
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => setEditingEmployee(employe)}>
                   <Edit2 className="h-3.5 w-3.5 mr-1" />
-                  Modifier
+                  {t("common.modify")}
                 </Button>
                 <Button
                   size="sm"
                   variant={employe.is_active ? "outline" : "default"}
                   onClick={() => toggleStatus.mutate({ id: employe.id, is_active: !employe.is_active })}
                 >
-                  {employe.is_active ? "Désactiver" : "Activer"}
+                  {employe.is_active ? t("dashboard.deactivate") : t("dashboard.activate")}
                 </Button>
                 <Button
                   size="sm"
@@ -231,11 +213,10 @@ export default function Employes() {
         </div>
       )}
 
-      {/* Create Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Ajouter un employé</DialogTitle>
+            <DialogTitle>{t("employees.addEmployeeTitle")}</DialogTitle>
           </DialogHeader>
           <EmployeeForm
             onSubmit={handleCreate}
@@ -245,11 +226,10 @@ export default function Employes() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editingEmployee} onOpenChange={() => setEditingEmployee(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Modifier l'employé</DialogTitle>
+            <DialogTitle>{t("employees.editEmployee")}</DialogTitle>
           </DialogHeader>
           <EmployeeForm
             employee={editingEmployee}
@@ -260,22 +240,21 @@ export default function Employes() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deletingEmployee} onOpenChange={() => setDeletingEmployee(null)}>
         <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer l'employé ?</AlertDialogTitle>
+            <AlertDialogTitle>{t("employees.deleteEmployee")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. L'employé "{deletingEmployee?.full_name}" sera supprimé définitivement.
+              {t("employees.deleteEmployeeDesc", { name: deletingEmployee?.full_name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {deleteEmployee.isPending ? "Suppression..." : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
