@@ -48,10 +48,36 @@ To change the currency (default MAD — Moroccan Dirham), search for `MAD` in th
 | Role | Access |
 |------|--------|
 | `super_admin` | Full access, all agencies, user management |
-| `admin` | Manage assigned agencies |
-| `agent` | Limited access to their agency |
+| `admin` | Manage assigned agencies, create agents |
+| `agent` | Limited access to their agency (no accounting, no settings) |
 
 Roles are managed in the `user_roles` table.
+
+### Creating Users
+
+#### 1. Super Admin (First Setup)
+
+The first super admin is created during installation using the `seed-admin` Edge Function (see `INSTALLATION.md`, Step 6).
+
+#### 2. Agency Admins
+
+1. Log in as **Super Admin**
+2. Navigate to **Users** in the sidebar menu
+3. Click **"Create Admin"**
+4. Fill in the form: name, email, password
+5. Select one or more agencies to assign
+6. The admin will be able to log in immediately
+
+#### 3. Agents (Employees with App Access)
+
+1. Log in as **Super Admin** or **Agency Admin**
+2. Navigate to **Employees** in the sidebar menu
+3. Click **"Add Employee"**
+4. Fill in the employee details
+5. Check **"Create user account"** to give them login access
+6. Set a temporary password — the agent can then log in
+
+> **Note:** Admins can only create agents within their own assigned agencies. Only the Super Admin can create other admins.
 
 ---
 
