@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Users, Building2, Check, Loader2, MoreVertical, UserX, UserCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Agent {
   id: string;
@@ -42,6 +42,7 @@ interface Agent {
 }
 
 export function AgentsList() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedAgencies, setSelectedAgencies] = useState<Record<string, string>>({});
   const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
@@ -138,11 +139,10 @@ export function AgentsList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents-list"] });
-      toast.success("Agence assignée avec succès");
+      toast.success(t("dashboard.agencyAssigned"));
     },
-    onError: (error) => {
-      console.error("Error assigning agency:", error);
-      toast.error("Erreur lors de l'assignation de l'agence");
+    onError: () => {
+      toast.error(t("dashboard.agencyAssignError"));
     },
   });
 
@@ -166,13 +166,12 @@ export function AgentsList() {
       queryClient.invalidateQueries({ queryKey: ["agents-list"] });
       toast.success(
         variables.isActive
-          ? "Compte agent activé"
-          : "Compte agent désactivé"
+          ? t("dashboard.accountActivated")
+          : t("dashboard.accountDeactivated")
       );
     },
-    onError: (error) => {
-      console.error("Error toggling agent status:", error);
-      toast.error("Erreur lors de la modification du statut");
+    onError: () => {
+      toast.error(t("dashboard.statusChangeError"));
     },
   });
 
@@ -197,12 +196,11 @@ export function AgentsList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents-list"] });
-      toast.success("Agent supprimé avec succès");
+      toast.success(t("dashboard.agentDeleted"));
       setAgentToDelete(null);
     },
-    onError: (error) => {
-      console.error("Error deleting agent:", error);
-      toast.error("Erreur lors de la suppression de l'agent");
+    onError: () => {
+      toast.error(t("dashboard.agentDeleteError"));
     },
   });
 
@@ -232,7 +230,7 @@ export function AgentsList() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Agents
+            {t("dashboard.agents")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
@@ -248,7 +246,7 @@ export function AgentsList() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Agents
+            {t("dashboard.agents")}
           </CardTitle>
           <Button
             variant="outline"
@@ -259,13 +257,13 @@ export function AgentsList() {
             {agentsFetching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Rafraîchir"
+              t("common.refresh")
             )}
           </Button>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            Impossible de charger la liste des agents.
+            {t("dashboard.unableToLoad")}
           </p>
         </CardContent>
       </Card>
@@ -278,7 +276,7 @@ export function AgentsList() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Agents
+            {t("dashboard.agents")}
           </CardTitle>
           <Button
             variant="outline"
@@ -289,13 +287,13 @@ export function AgentsList() {
             {agentsFetching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Rafraîchir"
+              t("common.refresh")
             )}
           </Button>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            Aucun agent inscrit
+            {t("dashboard.noAgents")}
           </p>
         </CardContent>
       </Card>
@@ -308,7 +306,7 @@ export function AgentsList() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Agents ({agents.length})
+            {t("dashboard.agents")} ({agents.length})
           </CardTitle>
           <Button
             variant="outline"
@@ -319,7 +317,7 @@ export function AgentsList() {
             {agentsFetching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Rafraîchir"
+              t("common.refresh")
             )}
           </Button>
         </CardHeader>
@@ -335,11 +333,11 @@ export function AgentsList() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">
-                      {agent.full_name || "Sans nom"}
+                      {agent.full_name || t("dashboard.noName")}
                     </p>
                     {!agent.is_active && (
                       <Badge variant="destructive" className="text-xs">
-                        Désactivé
+                        {t("common.disabled")}
                       </Badge>
                     )}
                   </div>
@@ -364,7 +362,7 @@ export function AgentsList() {
                         }
                       >
                         <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Choisir agence" />
+                          <SelectValue placeholder={t("dashboard.chooseAgency")} />
                         </SelectTrigger>
                         <SelectContent>
                           {agencies?.map((agency) => (
@@ -406,12 +404,12 @@ export function AgentsList() {
                         {agent.is_active ? (
                           <>
                             <UserX className="h-4 w-4 mr-2" />
-                            Désactiver
+                            {t("dashboard.deactivate")}
                           </>
                         ) : (
                           <>
                             <UserCheck className="h-4 w-4 mr-2" />
-                            Activer
+                            {t("dashboard.activate")}
                           </>
                         )}
                       </DropdownMenuItem>
@@ -420,7 +418,7 @@ export function AgentsList() {
                         onClick={() => setAgentToDelete(agent)}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Supprimer
+                        {t("common.delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -435,15 +433,11 @@ export function AgentsList() {
       <AlertDialog open={!!agentToDelete} onOpenChange={(open) => !open && setAgentToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer l'agent ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer l'agent{" "}
-              <strong>{agentToDelete?.full_name || agentToDelete?.email}</strong> ?
-              Cette action est irréversible.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("dashboard.deleteAgent")}</AlertDialogTitle>
+            <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t("dashboard.deleteAgentDesc", { name: agentToDelete?.full_name || agentToDelete?.email }) }} />
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAgent}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -452,7 +446,7 @@ export function AgentsList() {
               {deleteAgentMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Supprimer
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
