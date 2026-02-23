@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCreateVehicle, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X, ImageIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type VehicleFormData = {
   brand: string;
@@ -38,6 +40,9 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
   const createVehicle = useCreateVehicle();
   const updateVehicle = useUpdateVehicle();
   const isEditing = !!vehicle;
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(vehicle?.image_url || null);
+  const [uploading, setUploading] = useState(false);
 
   const vehicleSchema = z.object({
     brand: z.string().min(1, t("forms.validation.brandRequired")),
@@ -76,21 +81,63 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
     },
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("forms.vehicle.imageTooLarge", "Image trop volumineuse (max 5MB)"));
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return imagePreview; // keep existing URL if no new file
+    setUploading(true);
+    try {
+      const ext = imageFile.name.split(".").pop();
+      const fileName = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("vehicle-images")
+        .upload(fileName, imageFile, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage
+        .from("vehicle-images")
+        .getPublicUrl(fileName);
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error(error);
+      toast.error(t("forms.vehicle.imageUploadError", "Erreur lors de l'upload de l'image"));
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const onSubmit = async (data: VehicleFormData) => {
     try {
+      const imageUrl = await uploadImage();
       if (isEditing) {
-        await updateVehicle.mutateAsync({ id: vehicle.id, ...data });
+        await updateVehicle.mutateAsync({ id: vehicle.id, ...data, image_url: imageUrl });
       } else {
-        await createVehicle.mutateAsync(data as any);
+        await createVehicle.mutateAsync({ ...data, image_url: imageUrl } as any);
       }
       form.reset();
+      setImageFile(null);
+      setImagePreview(null);
       onOpenChange(false);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const isPending = createVehicle.isPending || updateVehicle.isPending;
+  const isPending = createVehicle.isPending || updateVehicle.isPending || uploading;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -103,218 +150,164 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Image Upload */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.vehicleImage", "Photo du véhicule")}</h4>
+              <div className="flex items-center gap-4">
+                {imagePreview ? (
+                  <div className="relative w-32 h-24 rounded-lg overflow-hidden border border-border">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-background/80 hover:bg-background text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-24 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
+                    <ImageIcon className="h-8 w-8 opacity-40" />
+                  </div>
+                )}
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-md border border-input bg-background hover:bg-accent text-sm font-medium transition-colors">
+                    <Upload className="h-4 w-4" />
+                    {t("forms.vehicle.uploadImage", "Choisir une image")}
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.generalInfo")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="brand"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.brand")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("forms.vehicle.brandPlaceholder")} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="model"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.model")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("forms.vehicle.modelPlaceholder")} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="registration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.registration")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("forms.vehicle.registrationPlaceholder")} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.year")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="2024" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="color"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.color")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("forms.vehicle.colorPlaceholder")} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="seats"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.seats")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="fuel_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.fuelType")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("forms.vehicle.select")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Diesel">{t("forms.vehicle.diesel")}</SelectItem>
-                          <SelectItem value="Essence">{t("forms.vehicle.gasoline")}</SelectItem>
-                          <SelectItem value="Hybride">{t("forms.vehicle.hybrid")}</SelectItem>
-                          <SelectItem value="Électrique">{t("forms.vehicle.electric")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="transmission"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.transmission")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("forms.vehicle.select")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Manuelle">{t("forms.vehicle.manual")}</SelectItem>
-                          <SelectItem value="Automatique">{t("forms.vehicle.automatic")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="brand" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.brand")}</FormLabel>
+                    <FormControl><Input placeholder={t("forms.vehicle.brandPlaceholder")} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="model" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.model")}</FormLabel>
+                    <FormControl><Input placeholder={t("forms.vehicle.modelPlaceholder")} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="registration" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.registration")}</FormLabel>
+                    <FormControl><Input placeholder={t("forms.vehicle.registrationPlaceholder")} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="year" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.year")}</FormLabel>
+                    <FormControl><Input type="number" placeholder="2024" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="color" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.color")}</FormLabel>
+                    <FormControl><Input placeholder={t("forms.vehicle.colorPlaceholder")} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="seats" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.seats")}</FormLabel>
+                    <FormControl><Input type="number" placeholder="5" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="fuel_type" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.fuelType")}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder={t("forms.vehicle.select")} /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="Diesel">{t("forms.vehicle.diesel")}</SelectItem>
+                        <SelectItem value="Essence">{t("forms.vehicle.gasoline")}</SelectItem>
+                        <SelectItem value="Hybride">{t("forms.vehicle.hybrid")}</SelectItem>
+                        <SelectItem value="Électrique">{t("forms.vehicle.electric")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="transmission" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.transmission")}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder={t("forms.vehicle.select")} /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="Manuelle">{t("forms.vehicle.manual")}</SelectItem>
+                        <SelectItem value="Automatique">{t("forms.vehicle.automatic")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
             </div>
 
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.pricingStatus")}</h4>
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="daily_rate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.dailyRate")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="350" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.status")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="available">{t("forms.vehicle.statusAvailable")}</SelectItem>
-                          <SelectItem value="rented">{t("forms.vehicle.statusRented")}</SelectItem>
-                          <SelectItem value="reserved">{t("forms.vehicle.statusReserved")}</SelectItem>
-                          <SelectItem value="maintenance">{t("forms.vehicle.statusMaintenance")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="daily_rate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.dailyRate")}</FormLabel>
+                    <FormControl><Input type="number" placeholder="350" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="status" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.status")}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="available">{t("forms.vehicle.statusAvailable")}</SelectItem>
+                        <SelectItem value="rented">{t("forms.vehicle.statusRented")}</SelectItem>
+                        <SelectItem value="reserved">{t("forms.vehicle.statusReserved")}</SelectItem>
+                        <SelectItem value="maintenance">{t("forms.vehicle.statusMaintenance")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
             </div>
 
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.documents")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="insurance_expiry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.insurance")}</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="registration_card_expiry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.registrationCard")}</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="technical_visit_expiry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("forms.vehicle.technicalVisit")}</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="insurance_expiry" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.insurance")}</FormLabel>
+                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="registration_card_expiry" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.registrationCard")}</FormLabel>
+                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="technical_visit_expiry" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("forms.vehicle.technicalVisit")}</FormLabel>
+                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
             </div>
 

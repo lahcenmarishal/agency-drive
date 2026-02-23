@@ -30,9 +30,13 @@ export function VehicleCard({ vehicle, onEdit, hasDocumentAlert }: VehicleCardPr
 
   return (
     <div className="glass-card overflow-hidden group">
-      {/* Vehicle Image Placeholder */}
-      <div className="h-40 bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center relative">
-        <Car className="h-16 w-16 text-muted-foreground/30" />
+      {/* Vehicle Image */}
+      <div className="h-40 bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center relative overflow-hidden">
+        {vehicle.image_url ? (
+          <img src={vehicle.image_url} alt={`${vehicle.brand} ${vehicle.model}`} className="w-full h-full object-cover" />
+        ) : (
+          <Car className="h-16 w-16 text-muted-foreground/30" />
+        )}
         {hasDocumentAlert && (
           <div className="absolute top-3 right-3">
             <div className="p-1.5 rounded-full bg-amber-500/20">
