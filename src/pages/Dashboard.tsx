@@ -61,7 +61,7 @@ export default function Dashboard() {
             <div>
               <p className="text-xs md:text-sm font-medium text-muted-foreground">{t("dashboard.totalRevenue")}</p>
               <p className="text-xl md:text-3xl font-bold font-display text-green-400 mt-1">
-                {(stats?.totalRevenue || 0).toLocaleString()} MAD
+                ${(stats?.totalRevenue || 0).toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 {stats?.transactionsCount || 0} {t("dashboard.transactionsThisMonth")}
@@ -77,10 +77,10 @@ export default function Dashboard() {
             <div>
               <p className="text-xs md:text-sm font-medium text-muted-foreground">{t("dashboard.totalExpenses")}</p>
               <p className="text-xl md:text-3xl font-bold font-display text-red-400 mt-1">
-                {(stats?.totalExpenses || 0).toLocaleString()} MAD
+                ${(stats?.totalExpenses || 0).toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                {t("dashboard.netBalance")}: {((stats?.totalRevenue || 0) - (stats?.totalExpenses || 0)).toLocaleString()} MAD
+                {t("dashboard.netBalance")}: ${((stats?.totalRevenue || 0) - (stats?.totalExpenses || 0)).toLocaleString()}
               </p>
             </div>
             <div className="flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-xl bg-red-500/10">

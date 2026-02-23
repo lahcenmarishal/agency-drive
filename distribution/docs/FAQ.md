@@ -61,7 +61,7 @@
 **A:** Unlimited. The super_admin can create as many agencies as needed.
 
 ### Q: Does the system support multiple currencies?
-**A:** By default, the currency is MAD (Moroccan Dirham). To change it, modify the references in the accounting components.
+**A:** By default, the currency is USD (US Dollar). To change it, modify the references in the accounting components.
 
 ### Q: Can I add new features?
 **A:** Yes! The code is fully modifiable. The stack (React + TypeScript + Tailwind + Supabase) is modern and well-documented.
