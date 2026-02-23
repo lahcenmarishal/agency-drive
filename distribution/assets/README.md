@@ -1,22 +1,22 @@
 # Assets — AutoRent Pro
 
-Ce dossier contient les captures d'écran et visuels pour la marketplace.
+This folder contains screenshots and visuals for the marketplace.
 
-## Fichiers requis
+## Required Files
 
-Remplacez ces fichiers par vos propres captures d'écran :
+Replace these files with your own screenshots:
 
-- `preview-dashboard.png` — Capture du tableau de bord (1280x720 recommandé)
-- `preview-vehicles.png` — Capture de la page véhicules
-- `preview-accounting.png` — Capture de la page comptabilité
-- `preview-mobile.png` — Capture de l'interface mobile (390x844)
-- `preview-dark-mode.png` — Capture en mode sombre
-- `thumbnail.png` — Miniature pour la marketplace (600x400)
+- `preview-dashboard.png` — Dashboard screenshot (1280x720 recommended)
+- `preview-vehicles.png` — Vehicles page screenshot
+- `preview-accounting.png` — Accounting page screenshot
+- `preview-mobile.png` — Mobile interface screenshot (390x844)
+- `preview-dark-mode.png` — Dark mode screenshot
+- `thumbnail.png` — Marketplace thumbnail (600x400)
 
-## Conseils pour de bons visuels
+## Tips for Great Visuals
 
-1. Utilisez des données réalistes (pas de "Lorem ipsum")
-2. Montrez l'application avec du contenu riche
-3. Capturez en haute résolution (2x pour Retina)
-4. Incluez les deux thèmes (clair et sombre)
-5. Montrez les différentes tailles d'écran (desktop + mobile)
+1. Use realistic data (no "Lorem ipsum")
+2. Show the application with rich content
+3. Capture in high resolution (2x for Retina)
+4. Include both themes (light and dark)
+5. Show different screen sizes (desktop + mobile)

@@ -1,103 +1,103 @@
-# 🔑 Guide d'Activation — AutoRent Pro
+# 🔑 Activation Guide — AutoRent Pro
 
-## Fonctionnement du système de licence
+## How the License System Works
 
-AutoRent Pro utilise un système de licence lié au domaine pour protéger votre produit.
+AutoRent Pro uses a domain-linked license system to protect your product.
 
-### Flux d'activation
+### Activation Flow
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌────────────────┐
-│  App lancée │ ──► │ Vérif. localhost? │ ──► │ Bypass (dev)   │
+│  App loaded  │ ──► │ Is localhost?    │ ──► │ Bypass (dev)   │
 └─────────────┘     └──────────────────┘     └────────────────┘
-                            │ Non
+                            │ No
                             ▼
                     ┌──────────────────┐
-                    │ Vérif. localStorage│
+                    │ Check localStorage│
                     └──────────────────┘
-                            │ Non trouvé
+                            │ Not found
                             ▼
                     ┌──────────────────┐     ┌────────────────┐
-                    │ Vérif. serveur   │ ──► │ Domaine connu? │
-                    │ (par domaine)    │     │ → Auto-activé  │
+                    │ Server check     │ ──► │ Known domain?  │
+                    │ (by domain)      │     │ → Auto-activate│
                     └──────────────────┘     └────────────────┘
-                            │ Non
+                            │ No
                             ▼
                     ┌──────────────────┐
-                    │ Page d'activation│
-                    │ (saisie clé)     │
+                    │ Activation page  │
+                    │ (enter key)      │
                     └──────────────────┘
 ```
 
 ---
 
-## Pour le vendeur : Générer une licence
+## For the Seller: Generate a License
 
 ### Via SQL (Supabase SQL Editor)
 
 ```sql
--- Licence sans domaine pré-lié (le client l'activera)
+-- License without a pre-linked domain (client will activate it)
 INSERT INTO public.licenses (license_key, client_name, is_active, expires_at)
 VALUES (
   'RENT-2025-ABCD-EF01',
-  'Nom du client',
+  'Client Name',
   true,
   '2026-12-31T23:59:59Z'
 );
 
--- Licence pré-liée à un domaine
+-- License pre-linked to a domain
 INSERT INTO public.licenses (license_key, client_name, allowed_domain, is_active, expires_at)
 VALUES (
   'RENT-2025-WXYZ-9876',
-  'Nom du client',
-  'app.clientdomaine.com',
+  'Client Name',
+  'app.clientdomain.com',
   true,
   '2026-12-31T23:59:59Z'
 );
 ```
 
-### Format recommandé des clés
+### Recommended Key Format
 
 ```
 RENT-YYYY-XXXX-XXXX
 ```
 
-Où `YYYY` = année, `XXXX` = caractères alphanumériques aléatoires.
+Where `YYYY` = year, `XXXX` = random alphanumeric characters.
 
 ---
 
-## Pour l'acheteur : Activer la licence
+## For the Buyer: Activate the License
 
-### Activation automatique
+### Automatic Activation
 
-Si le vendeur a pré-lié votre domaine à la licence, l'application s'active automatiquement au premier chargement. Aucune action requise.
+If the seller has pre-linked your domain to the license, the application activates automatically on first load. No action required.
 
-### Activation manuelle
+### Manual Activation
 
-1. Déployez l'application sur votre domaine
-2. Accédez à l'URL de votre application
-3. La page d'activation s'affiche automatiquement
-4. Entrez la clé de licence fournie par le vendeur
-5. Cliquez sur **Activer la licence**
-6. L'application se recharge et est prête à l'emploi
+1. Deploy the application to your domain
+2. Navigate to your application URL
+3. The activation page will appear automatically
+4. Enter the license key provided by the seller
+5. Click **Activate License**
+6. The application reloads and is ready to use
 
 ---
 
-## Gestion des licences
+## License Management
 
-### Désactiver une licence
+### Deactivate a License
 
 ```sql
 UPDATE public.licenses SET is_active = false WHERE license_key = 'RENT-2025-ABCD-EF01';
 ```
 
-### Transférer à un autre domaine
+### Transfer to Another Domain
 
 ```sql
-UPDATE public.licenses SET allowed_domain = 'nouveau-domaine.com' WHERE license_key = 'RENT-2025-ABCD-EF01';
+UPDATE public.licenses SET allowed_domain = 'new-domain.com' WHERE license_key = 'RENT-2025-ABCD-EF01';
 ```
 
-### Prolonger une licence
+### Extend a License
 
 ```sql
 UPDATE public.licenses SET expires_at = '2027-12-31T23:59:59Z' WHERE license_key = 'RENT-2025-ABCD-EF01';
@@ -105,16 +105,16 @@ UPDATE public.licenses SET expires_at = '2027-12-31T23:59:59Z' WHERE license_key
 
 ---
 
-## Dépannage
+## Troubleshooting
 
-| Problème | Solution |
-|----------|----------|
-| "Clé de licence invalide" | Vérifiez que la clé existe dans la table `licenses` et que `is_active = true` |
-| "Licence liée à un autre domaine" | La clé est déjà utilisée sur un autre domaine. Créez-en une nouvelle ou transférez. |
-| "Licence expirée" | Mettez à jour le champ `expires_at` dans la base de données |
-| Page d'activation en boucle | Videz le localStorage du navigateur et réessayez |
-| Bypass sur localhost ne fonctionne pas | Vérifiez que vous accédez bien via `localhost` et non une IP |
+| Issue | Solution |
+|-------|----------|
+| "Invalid license key" | Verify the key exists in the `licenses` table and `is_active = true` |
+| "License linked to another domain" | The key is already used on another domain. Create a new one or transfer it. |
+| "License expired" | Update the `expires_at` field in the database |
+| Activation page loop | Clear the browser's localStorage and try again |
+| Localhost bypass not working | Make sure you're accessing via `localhost`, not an IP address |
 
 ---
 
-> ⚠️ **Important** : L'URL de l'API de vérification (`LICENSE_API_URL`) dans `LicenseContext.tsx` doit pointer vers **votre** projet Supabase, pas celui du développeur original. Mettez-la à jour avant la distribution.
+> ⚠️ **Important**: The verification API URL (`LICENSE_API_URL`) in `LicenseContext.tsx` must point to **your** Supabase project, not the original developer's. Update it before distribution.

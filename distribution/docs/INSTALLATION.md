@@ -1,78 +1,78 @@
-# 📦 Guide d'Installation — AutoRent Pro
+# 📦 Installation Guide — AutoRent Pro
 
-## Prérequis
+## Prerequisites
 
-| Outil | Version minimale |
-|-------|-----------------|
+| Tool | Minimum Version |
+|------|----------------|
 | Node.js | 18+ |
-| npm / yarn / bun | Dernière version |
-| Supabase | Compte gratuit ou payant |
+| npm / yarn / bun | Latest version |
+| Supabase | Free or paid account |
 | Git | 2.x+ |
 
 ---
 
-## Étape 1 : Créer un projet Supabase
+## Step 1: Create a Supabase Project
 
-1. Rendez-vous sur [supabase.com](https://supabase.com) et créez un compte
-2. Cliquez sur **New Project**
-3. Choisissez un nom, un mot de passe pour la base de données, et une région
-4. Notez les informations suivantes (disponibles dans **Settings → API**) :
-   - `Project URL` (ex: `https://xxxxx.supabase.co`)
+1. Go to [supabase.com](https://supabase.com) and create an account
+2. Click **New Project**
+3. Choose a name, database password, and region
+4. Note down the following information (available in **Settings → API**):
+   - `Project URL` (e.g., `https://xxxxx.supabase.co`)
    - `anon / public key`
-   - `service_role key` (pour les Edge Functions)
+   - `service_role key` (for Edge Functions)
 
 ---
 
-## Étape 2 : Importer le schéma de base de données
+## Step 2: Import the Database Schema
 
-1. Dans votre dashboard Supabase, allez dans **SQL Editor**
-2. Ouvrez le fichier `database/schema.sql` fourni dans ce package
-3. Copiez-collez le contenu complet dans l'éditeur SQL
-4. Cliquez sur **Run** pour exécuter le script
-5. Vérifiez que toutes les tables sont créées dans **Table Editor**
+1. In your Supabase dashboard, go to **SQL Editor**
+2. Open the `database/schema.sql` file included in this package
+3. Copy and paste the entire contents into the SQL editor
+4. Click **Run** to execute the script
+5. Verify that all tables are created in **Table Editor**
 
 ---
 
-## Étape 3 : Installer le code source
+## Step 3: Install the Source Code
 
 ```bash
-# Extraire le dossier app/ du ZIP
+# Extract the app/ folder from the ZIP
 cd app/
 
-# Installer les dépendances
+# Install dependencies
 npm install
 
-# Copier le fichier d'environnement
+# Copy the environment file
 cp .env.example .env
 ```
 
 ---
 
-## Étape 4 : Configurer les variables d'environnement
+## Step 4: Configure Environment Variables
 
-Éditez le fichier `.env` à la racine du projet :
+Edit the `.env` file at the project root:
 
 ```env
-VITE_SUPABASE_URL=https://VOTRE_PROJECT_ID.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=votre_anon_key_ici
-VITE_SUPABASE_PROJECT_ID=votre_project_id_ici
+VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key_here
+VITE_SUPABASE_PROJECT_ID=your_project_id_here
 ```
 
 ---
 
-## Étape 5 : Déployer les Edge Functions
+## Step 5: Deploy Edge Functions
 
 ```bash
-# Installer le CLI Supabase
+# Install the Supabase CLI
 npm install -g supabase
 
-# Se connecter
+# Log in
 supabase login
 
-# Lier au projet
-supabase link --project-ref VOTRE_PROJECT_ID
+# Link to your project
+supabase link --project-ref YOUR_PROJECT_ID
 
-# Déployer les fonctions
+# Deploy functions
 supabase functions deploy verify-license
 supabase functions deploy create-user
 supabase functions deploy manage-user
@@ -81,37 +81,37 @@ supabase functions deploy seed-admin
 
 ---
 
-## Étape 6 : Créer le premier administrateur
+## Step 6: Create the First Administrator
 
-Appelez la Edge Function `seed-admin` via curl ou depuis le SQL Editor :
+Call the `seed-admin` Edge Function via curl or from the SQL Editor:
 
 ```bash
-curl -X POST "https://VOTRE_PROJECT_ID.supabase.co/functions/v1/seed-admin" \
-  -H "Authorization: Bearer VOTRE_ANON_KEY" \
+curl -X POST "https://YOUR_PROJECT_ID.supabase.co/functions/v1/seed-admin" \
+  -H "Authorization: Bearer YOUR_ANON_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@votreentreprise.com", "password": "VotreMotDePasse123!"}'
+  -d '{"email": "admin@yourcompany.com", "password": "YourPassword123!"}'
 ```
 
 ---
 
-## Étape 7 : Lancer en développement
+## Step 7: Run in Development
 
 ```bash
 npm run dev
 ```
 
-L'application sera accessible sur `http://localhost:5173`
+The application will be available at `http://localhost:5173`
 
 ---
 
-## Vérification post-installation
+## Post-Installation Checklist
 
-- [ ] Les tables sont visibles dans Supabase Table Editor
-- [ ] Les Edge Functions sont déployées (vérifier dans Supabase → Edge Functions)
-- [ ] Le fichier `.env` est correctement configuré
-- [ ] L'application se lance sans erreurs sur `localhost:5173`
-- [ ] Vous pouvez vous connecter avec le compte admin créé
+- [ ] Tables are visible in Supabase Table Editor
+- [ ] Edge Functions are deployed (check in Supabase → Edge Functions)
+- [ ] The `.env` file is correctly configured
+- [ ] The application launches without errors on `localhost:5173`
+- [ ] You can log in with the admin account you created
 
 ---
 
-> 📖 Consultez `CONFIGURATION.md` pour la personnalisation avancée et `DEPLOYMENT.md` pour le déploiement en production.
+> 📖 See `CONFIGURATION.md` for advanced customization and `DEPLOYMENT.md` for production deployment.

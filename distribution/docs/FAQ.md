@@ -2,76 +2,76 @@
 
 ## Installation
 
-### Q: Quelle version de Node.js dois-je utiliser ?
-**R:** Node.js 18 ou supérieur. Nous recommandons la version LTS la plus récente.
+### Q: What version of Node.js should I use?
+**A:** Node.js 18 or higher. We recommend the latest LTS version.
 
-### Q: Puis-je utiliser yarn ou bun au lieu de npm ?
-**R:** Oui, les trois gestionnaires de paquets sont supportés. Remplacez `npm install` par `yarn install` ou `bun install`.
+### Q: Can I use yarn or bun instead of npm?
+**A:** Yes, all three package managers are supported. Replace `npm install` with `yarn install` or `bun install`.
 
-### Q: L'installation échoue avec des erreurs de dépendances
-**R:** Supprimez `node_modules/` et `package-lock.json`, puis relancez `npm install`. Si le problème persiste, vérifiez votre version de Node.js.
-
----
-
-## Base de données
-
-### Q: Puis-je utiliser une autre base de données que Supabase ?
-**R:** Non. AutoRent Pro est conçu spécifiquement pour Supabase (PostgreSQL + Auth + Edge Functions). La migration vers une autre base nécessiterait une réécriture significative.
-
-### Q: Comment réinitialiser la base de données ?
-**R:** Supprimez toutes les tables dans Supabase SQL Editor, puis réimportez `database/schema.sql`.
-
-### Q: Puis-je modifier le schéma de la base ?
-**R:** Oui, mais assurez-vous de mettre à jour le fichier `src/integrations/supabase/types.ts` en conséquence (via `supabase gen types typescript`).
+### Q: Installation fails with dependency errors
+**A:** Delete `node_modules/` and `package-lock.json`, then run `npm install` again. If the issue persists, check your Node.js version.
 
 ---
 
-## Licence
+## Database
 
-### Q: L'application demande une licence sur localhost
-**R:** Cela ne devrait pas arriver. Le système bypass automatiquement sur `localhost` et `127.0.0.1`. Si le problème persiste, vérifiez que vous accédez bien via `http://localhost:5173`.
+### Q: Can I use a database other than Supabase?
+**A:** No. AutoRent Pro is designed specifically for Supabase (PostgreSQL + Auth + Edge Functions). Migrating to another database would require significant rewrites.
 
-### Q: Comment transférer une licence à un autre domaine ?
-**R:** Mettez à jour le champ `allowed_domain` de la licence dans la table `licenses` via Supabase SQL Editor.
+### Q: How do I reset the database?
+**A:** Delete all tables in the Supabase SQL Editor, then re-import `database/schema.sql`.
 
-### Q: La licence expire-t-elle ?
-**R:** Oui, si le champ `expires_at` est renseigné. Mettez-le à `NULL` pour une licence perpétuelle.
-
----
-
-## Déploiement
-
-### Q: L'application affiche une page blanche après déploiement
-**R:** Vérifiez que :
-1. Les variables d'environnement `VITE_*` sont configurées
-2. Le redirecting SPA est en place (`_redirects` pour Netlify, `vercel.json` pour Vercel)
-3. Le build a réussi sans erreurs
-
-### Q: Les Edge Functions ne fonctionnent pas
-**R:** Vérifiez qu'elles sont bien déployées via `supabase functions list`. Redéployez si nécessaire avec `supabase functions deploy`.
-
-### Q: Puis-je héberger sur un sous-domaine ?
-**R:** Oui, la licence est liée au hostname complet (ex: `app.monsite.com`).
+### Q: Can I modify the database schema?
+**A:** Yes, but make sure to update `src/integrations/supabase/types.ts` accordingly (via `supabase gen types typescript`).
 
 ---
 
-## Fonctionnalités
+## License
 
-### Q: Combien d'agences puis-je créer ?
-**R:** Illimité. Le super_admin peut créer autant d'agences que nécessaire.
+### Q: The app asks for a license on localhost
+**A:** This should not happen. The system automatically bypasses on `localhost` and `127.0.0.1`. If the issue persists, make sure you're accessing via `http://localhost:5173`.
 
-### Q: Le système supporte-t-il plusieurs devises ?
-**R:** Par défaut, la devise est le DA (Dinar Algérien). Pour changer, modifiez les références dans les composants de comptabilité.
+### Q: How do I transfer a license to another domain?
+**A:** Update the `allowed_domain` field of the license in the `licenses` table via the Supabase SQL Editor.
 
-### Q: Puis-je ajouter de nouvelles fonctionnalités ?
-**R:** Oui ! Le code est entièrement modifiable. La stack (React + TypeScript + Tailwind + Supabase) est moderne et bien documentée.
+### Q: Does the license expire?
+**A:** Yes, if the `expires_at` field is set. Set it to `NULL` for a perpetual license.
+
+---
+
+## Deployment
+
+### Q: The app shows a blank page after deployment
+**A:** Check that:
+1. `VITE_*` environment variables are configured
+2. SPA redirects are in place (`_redirects` for Netlify, `vercel.json` for Vercel)
+3. The build completed without errors
+
+### Q: Edge Functions are not working
+**A:** Verify they are deployed via `supabase functions list`. Redeploy if necessary with `supabase functions deploy`.
+
+### Q: Can I host on a subdomain?
+**A:** Yes, the license is linked to the full hostname (e.g., `app.mysite.com`).
+
+---
+
+## Features
+
+### Q: How many agencies can I create?
+**A:** Unlimited. The super_admin can create as many agencies as needed.
+
+### Q: Does the system support multiple currencies?
+**A:** By default, the currency is MAD (Moroccan Dirham). To change it, modify the references in the accounting components.
+
+### Q: Can I add new features?
+**A:** Yes! The code is fully modifiable. The stack (React + TypeScript + Tailwind + Supabase) is modern and well-documented.
 
 ---
 
 ## Support
 
-### Q: Comment obtenir de l'aide ?
-**R:** Consultez `SUPPORT.txt` pour les informations de contact.
+### Q: How do I get help?
+**A:** See `SUPPORT.txt` for contact information.
 
-### Q: Des mises à jour sont-elles disponibles ?
-**R:** Les mises à jour sont publiées sur la marketplace. Vérifiez régulièrement pour les nouvelles versions.
+### Q: Are updates available?
+**A:** Updates are published on the marketplace. Check regularly for new versions.

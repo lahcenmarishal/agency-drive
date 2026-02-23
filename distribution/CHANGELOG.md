@@ -1,48 +1,48 @@
 # 📋 Changelog — AutoRent Pro
 
-Toutes les modifications notables de ce projet sont documentées ici.
+All notable changes to this project are documented here.
 
-Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
 ## [1.0.0] — 2025-06-XX
 
-### ✨ Ajouté
-- Dashboard avec statistiques en temps réel (véhicules, locations, revenus)
-- Gestion multi-agences avec accès contrôlé par rôle
-- Module véhicules : ajout, modification, suivi des documents (assurance, visite technique, carte grise)
-- Module clients : base de données avec système de liste noire
-- Module réservations : création, confirmation, annulation, conversion en location
-- Module locations : contrats, suivi des paiements, retours
-- Module comptabilité : revenus, dépenses, graphiques par catégorie
-- Module chauffeurs : gestion et suivi des permis
-- Module employés : gestion du personnel par agence
-- Système d'authentification avec 3 rôles (Super Admin, Admin, Agent)
-- Thème sombre / clair avec basculement automatique
-- Interface responsive (mobile, tablette, desktop)
-- Système de licence avec activation par domaine et vérification serveur
-- Activation automatique si le domaine est déjà lié à une licence active
-- Page d'accueil (Landing) avec formulaire de démonstration
-- Alertes documents véhicules (expirations proches)
-- Edge Functions : verify-license, create-user, manage-user, seed-admin
-- Row Level Security (RLS) sur toutes les tables
-- Documentation complète (Installation, Configuration, Activation, Déploiement, FAQ)
+### ✨ Added
+- Dashboard with real-time statistics (vehicles, rentals, revenue)
+- Multi-agency management with role-based access control
+- Vehicles module: add, edit, document tracking (insurance, technical inspection, registration card)
+- Clients module: database with blacklist system
+- Reservations module: create, confirm, cancel, convert to rental
+- Rentals module: contracts, payment tracking, returns
+- Accounting module: income, expenses, charts by category
+- Drivers module: management and license tracking
+- Employees module: staff management per agency
+- Authentication system with 3 roles (Super Admin, Admin, Agent)
+- Dark / light theme with automatic toggle
+- Responsive interface (mobile, tablet, desktop)
+- License system with domain-based activation and server-side verification
+- Automatic activation if the domain is already linked to an active license
+- Landing page with demo request form
+- Vehicle document alerts (upcoming expirations)
+- Edge Functions: verify-license, create-user, manage-user, seed-admin
+- Row Level Security (RLS) on all tables
+- Complete documentation (Installation, Configuration, Activation, Deployment, FAQ)
 
-### 🔒 Sécurité
-- RLS activé sur toutes les tables
-- Authentification basée sur Supabase Auth
-- Vérification de licence côté serveur
-- Rôles et permissions granulaires
+### 🔒 Security
+- RLS enabled on all tables
+- Authentication based on Supabase Auth
+- Server-side license verification
+- Granular roles and permissions
 
 ---
 
-## [À venir]
+## [Upcoming]
 
-### 🔮 Prévu
-- Export PDF des contrats de location
-- Notifications email (expiration documents, retours en retard)
-- Tableau de bord analytique avancé
-- Application mobile (React Native)
-- Multi-langue (FR, AR, EN)
-- Intégration paiement en ligne
+### 🔮 Planned
+- PDF export of rental contracts
+- Email notifications (document expiration, late returns)
+- Advanced analytics dashboard
+- Mobile application (React Native)
+- Multi-language support (EN, FR, AR)
+- Online payment integration

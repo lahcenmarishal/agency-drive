@@ -1,4 +1,4 @@
-# 🚗 AutoRent Pro — Logiciel de Gestion de Location de Véhicules
+# 🚗 AutoRent Pro — Vehicle Rental Management Software
 
 <p align="center">
   <img src="assets/preview-dashboard.png" alt="AutoRent Pro Dashboard" width="800" />
@@ -6,54 +6,54 @@
 
 ---
 
-## ✨ Présentation
+## ✨ Overview
 
-**AutoRent Pro** est une solution complète et moderne de gestion de location de véhicules, conçue pour les agences de location. Multi-agences, multi-utilisateurs, avec comptabilité intégrée et système de licence.
+**AutoRent Pro** is a complete and modern vehicle rental management solution, designed for car rental agencies. Multi-agency, multi-user, with built-in accounting and a license system.
 
 ---
 
-## 🎯 Fonctionnalités principales
+## 🎯 Key Features
 
 | Module | Description |
 |--------|-------------|
-| 🏢 **Multi-Agences** | Gestion centralisée de plusieurs agences |
-| 🚗 **Flotte** | Suivi des véhicules, statuts, documents (assurance, visite technique, carte grise) |
-| 👥 **Clients** | Base de données clients avec système de liste noire |
-| 📅 **Réservations** | Gestion des réservations avec conversion en locations |
-| 📋 **Locations** | Contrats de location avec suivi des paiements |
-| 💰 **Comptabilité** | Revenus, dépenses, graphiques, catégories |
-| 👨‍✈️ **Chauffeurs** | Gestion des chauffeurs et suivi des permis |
-| 👨‍💼 **Employés** | Gestion du personnel par agence |
-| 🔐 **Authentification** | Système de rôles (Super Admin, Admin, Agent) |
-| 🌙 **Thème sombre** | Mode clair / sombre intégré |
-| 📱 **Responsive** | Interface adaptée mobile, tablette et desktop |
-| 🔑 **Licence** | Système d'activation par domaine avec vérification serveur |
+| 🏢 **Multi-Agency** | Centralized management of multiple agencies |
+| 🚗 **Fleet** | Vehicle tracking, statuses, documents (insurance, technical inspection, registration card) |
+| 👥 **Clients** | Client database with blacklist system |
+| 📅 **Reservations** | Reservation management with conversion to rentals |
+| 📋 **Rentals** | Rental contracts with payment tracking |
+| 💰 **Accounting** | Income, expenses, charts, categories |
+| 👨‍✈️ **Drivers** | Driver management and license tracking |
+| 👨‍💼 **Employees** | Staff management per agency |
+| 🔐 **Authentication** | Role-based system (Super Admin, Admin, Agent) |
+| 🌙 **Dark Theme** | Built-in light / dark mode |
+| 📱 **Responsive** | Mobile, tablet, and desktop-ready interface |
+| 🔑 **License** | Domain-based activation system with server-side verification |
 
 ---
 
-## 🛠️ Stack Technique
+## 🛠️ Tech Stack
 
-| Technologie | Usage |
-|-------------|-------|
-| **React 18** | Framework frontend |
-| **TypeScript** | Typage statique |
-| **Tailwind CSS** | Styling utilitaire |
-| **shadcn/ui** | Composants UI |
+| Technology | Usage |
+|------------|-------|
+| **React 18** | Frontend framework |
+| **TypeScript** | Static typing |
+| **Tailwind CSS** | Utility-first styling |
+| **shadcn/ui** | UI components |
 | **Supabase** | Backend (PostgreSQL, Auth, Edge Functions) |
-| **TanStack Query** | Gestion des données & cache |
-| **Recharts** | Graphiques et visualisations |
-| **React Router** | Navigation SPA |
-| **Vite** | Build tool ultra-rapide |
+| **TanStack Query** | Data management & caching |
+| **Recharts** | Charts and visualizations |
+| **React Router** | SPA navigation |
+| **Vite** | Ultra-fast build tool |
 
 ---
 
-## 📁 Structure du package
+## 📁 Package Structure
 
 ```
 AutoRent-Pro-v1.0/
-├── 📁 app/                  # Code source complet
-│   ├── src/                 # Sources React/TypeScript
-│   ├── public/              # Assets statiques
+├── 📁 app/                  # Full source code
+│   ├── src/                 # React/TypeScript sources
+│   ├── public/              # Static assets
 │   ├── supabase/            # Edge Functions
 │   └── package.json
 ├── 📁 docs/                 # Documentation
@@ -62,53 +62,53 @@ AutoRent-Pro-v1.0/
 │   ├── ACTIVATION.md
 │   ├── DEPLOYMENT.md
 │   └── FAQ.md
-├── 📁 database/             # Schéma SQL
+├── 📁 database/             # SQL Schema
 │   └── schema.sql
-├── 📁 assets/               # Captures d'écran
-├── 📄 README.md             # Ce fichier
-├── 📄 LICENSE.txt           # Licence commerciale
-├── 📄 CHANGELOG.md          # Historique des versions
-└── 📄 SUPPORT.txt           # Contact support
+├── 📁 assets/               # Screenshots
+├── 📄 README.md             # This file
+├── 📄 LICENSE.txt           # Commercial license
+├── 📄 CHANGELOG.md          # Version history
+└── 📄 SUPPORT.txt           # Support contact
 ```
 
 ---
 
-## ⚡ Démarrage rapide
+## ⚡ Quick Start
 
 ```bash
 cd app/
 npm install
 cp .env.example .env
-# Configurez vos clés Supabase dans .env
+# Configure your Supabase keys in .env
 npm run dev
 ```
 
-📖 Guide complet : [`docs/INSTALLATION.md`](docs/INSTALLATION.md)
+📖 Full guide: [`docs/INSTALLATION.md`](docs/INSTALLATION.md)
 
 ---
 
-## 📸 Captures d'écran
+## 📸 Screenshots
 
-| Dashboard | Véhicules | Comptabilité |
-|-----------|-----------|--------------|
-| ![Dashboard](assets/preview-dashboard.png) | ![Véhicules](assets/preview-vehicles.png) | ![Comptabilité](assets/preview-accounting.png) |
+| Dashboard | Vehicles | Accounting |
+|-----------|----------|------------|
+| ![Dashboard](assets/preview-dashboard.png) | ![Vehicles](assets/preview-vehicles.png) | ![Accounting](assets/preview-accounting.png) |
 
 ---
 
-## 📄 Licence
+## 📄 License
 
-Ce produit est distribué sous licence commerciale. Voir [`LICENSE.txt`](LICENSE.txt) pour les détails.
+This product is distributed under a commercial license. See [`LICENSE.txt`](LICENSE.txt) for details.
 
-**Une licence = un domaine.**
+**One license = one domain.**
 
 ---
 
 ## 💬 Support
 
-📧 Consultez [`SUPPORT.txt`](SUPPORT.txt) pour nous contacter.
+📧 See [`SUPPORT.txt`](SUPPORT.txt) to contact us.
 
 ---
 
 <p align="center">
-  Fait avec ❤️ pour les agences de location de véhicules
+  Made with ❤️ for vehicle rental agencies
 </p>
