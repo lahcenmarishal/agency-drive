@@ -8,19 +8,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCreateClient, useUpdateClient, Client } from "@/hooks/useClients";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const clientSchema = z.object({
-  full_name: z.string().min(1, "Le nom est requis"),
-  phone: z.string().optional(),
-  email: z.string().email("Email invalide").optional().or(z.literal("")),
-  id_number: z.string().optional(),
-  license_number: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type ClientFormData = z.infer<typeof clientSchema>;
+type ClientFormData = {
+  full_name: string;
+  phone?: string;
+  email?: string;
+  id_number?: string;
+  license_number?: string;
+  address?: string;
+  city?: string;
+  notes?: string;
+};
 
 interface ClientFormProps {
   open: boolean;
@@ -29,9 +28,21 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
+  const { t } = useTranslation();
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const isEditing = !!client;
+
+  const clientSchema = z.object({
+    full_name: z.string().min(1, t("forms.validation.nameRequired")),
+    phone: z.string().optional(),
+    email: z.string().email(t("forms.validation.invalidEmail")).optional().or(z.literal("")),
+    id_number: z.string().optional(),
+    license_number: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    notes: z.string().optional(),
+  });
 
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
@@ -68,24 +79,23 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
       <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">
-            {isEditing ? "Modifier le client" : "Nouveau client"}
+            {isEditing ? t("forms.client.editTitle") : t("forms.client.newTitle")}
           </DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Informations personnelles */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Informations personnelles</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.client.personalInfo")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="full_name"
                   render={({ field }) => (
                     <FormItem className="col-span-1 sm:col-span-2">
-                      <FormLabel>Nom complet *</FormLabel>
+                      <FormLabel>{t("forms.fullName")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Mohammed Alami" {...field} />
+                        <Input placeholder={t("forms.client.namePlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -96,9 +106,9 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Téléphone</FormLabel>
+                      <FormLabel>{t("forms.phone")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="+212 6 12 34 56 78" {...field} />
+                        <Input placeholder={t("forms.phonePlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -109,9 +119,9 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t("forms.email")}</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="email@example.com" {...field} />
+                        <Input type="email" placeholder={t("forms.emailPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -120,18 +130,17 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
               </div>
             </div>
 
-            {/* Documents */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Documents</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.client.documents")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="id_number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CIN</FormLabel>
+                      <FormLabel>{t("forms.client.idNumber")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="AB123456" {...field} />
+                        <Input placeholder={t("forms.client.idNumberPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -142,9 +151,9 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   name="license_number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>N° Permis de conduire</FormLabel>
+                      <FormLabel>{t("forms.client.licenseNumber")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="12345678" {...field} />
+                        <Input placeholder={t("forms.client.licenseNumberPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -153,18 +162,17 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
               </div>
             </div>
 
-            {/* Adresse */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Adresse</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.client.addressSection")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="address"
                   render={({ field }) => (
                     <FormItem className="col-span-1 sm:col-span-2">
-                      <FormLabel>Adresse</FormLabel>
+                      <FormLabel>{t("forms.address")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="123 Rue Example" {...field} />
+                        <Input placeholder={t("forms.addressPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -175,9 +183,9 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ville</FormLabel>
+                      <FormLabel>{t("forms.city")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Casablanca" {...field} />
+                        <Input placeholder={t("forms.cityPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -186,9 +194,8 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
               </div>
             </div>
 
-            {/* Notes internes */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Notes internes</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.client.internalNotes")}</h4>
               <FormField
                 control={form.control}
                 name="notes"
@@ -196,7 +203,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   <FormItem>
                     <FormControl>
                       <Textarea 
-                        placeholder="Notes visibles uniquement par le personnel..." 
+                        placeholder={t("forms.client.notesPlaceholder")} 
                         className="min-h-[80px] sm:min-h-[100px]"
                         {...field} 
                       />
@@ -209,11 +216,11 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
 
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-                Annuler
+                {t("forms.cancel")}
               </Button>
               <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? "Enregistrer" : "Ajouter"}
+                {isEditing ? t("forms.save") : t("forms.add")}
               </Button>
             </div>
           </form>

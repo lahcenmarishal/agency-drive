@@ -12,17 +12,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
 import type { Driver } from "@/hooks/useDrivers";
 
-const formSchema = z.object({
-  full_name: z.string().min(2, "Nom requis"),
-  phone: z.string().optional(),
-  license_number: z.string().optional(),
-  license_expiry: z.string().optional(),
-  is_active: z.boolean().default(true),
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = {
+  full_name: string;
+  phone?: string;
+  license_number?: string;
+  license_expiry?: string;
+  is_active: boolean;
+};
 
 interface DriverFormProps {
   driver?: Driver | null;
@@ -32,6 +31,16 @@ interface DriverFormProps {
 }
 
 export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverFormProps) {
+  const { t } = useTranslation();
+
+  const formSchema = z.object({
+    full_name: z.string().min(2, t("forms.validation.nameMin2")),
+    phone: z.string().optional(),
+    license_number: z.string().optional(),
+    license_expiry: z.string().optional(),
+    is_active: z.boolean().default(true),
+  });
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,9 +60,9 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
           name="full_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nom complet *</FormLabel>
+              <FormLabel>{t("forms.fullName")}</FormLabel>
               <FormControl>
-                <Input placeholder="Nom et prénom" {...field} />
+                <Input placeholder={t("forms.fullNamePlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -65,9 +74,9 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Téléphone</FormLabel>
+              <FormLabel>{t("forms.phone")}</FormLabel>
               <FormControl>
-                <Input placeholder="+212 6 XX XX XX XX" {...field} />
+                <Input placeholder={t("forms.phonePlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -80,7 +89,7 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
             name="license_number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Numéro de permis</FormLabel>
+                <FormLabel>{t("forms.driver.licenseNumber")}</FormLabel>
                 <FormControl>
                   <Input placeholder="ABC123456" {...field} />
                 </FormControl>
@@ -94,7 +103,7 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
             name="license_expiry"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date d'expiration</FormLabel>
+                <FormLabel>{t("forms.driver.licenseExpiry")}</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -110,9 +119,9 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
           render={({ field }) => (
             <FormItem className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Actif</FormLabel>
+                <FormLabel className="text-base">{t("forms.active")}</FormLabel>
                 <p className="text-sm text-muted-foreground">
-                  Le chauffeur est disponible pour les courses
+                  {t("forms.driver.activeDesc")}
                 </p>
               </div>
               <FormControl>
@@ -124,10 +133,10 @@ export function DriverForm({ driver, onSubmit, onCancel, isLoading }: DriverForm
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
+            {t("forms.cancel")}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {driver ? "Modifier" : "Ajouter"}
+            {driver ? t("forms.edit") : t("forms.add")}
           </Button>
         </div>
       </form>

@@ -465,5 +465,73 @@
     "allAgencies": "Toutes les agences",
     "myAgencies": "Mes agences",
     "loading": "Chargement..."
+  },
+  "forms": {
+    "fullName": "Nom complet *",
+    "fullNamePlaceholder": "Nom et prénom",
+    "phone": "Téléphone",
+    "phonePlaceholder": "+212 6 XX XX XX XX",
+    "email": "Email",
+    "emailPlaceholder": "email@exemple.com",
+    "cancel": "Annuler",
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "saving": "Enregistrement...",
+    "create": "Créer",
+    "save": "Enregistrer",
+    "active": "Actif",
+    "city": "Ville",
+    "cityPlaceholder": "Casablanca",
+    "address": "Adresse",
+    "addressPlaceholder": "123 Rue Exemple",
+    "driver": {
+      "licenseNumber": "Numéro de permis",
+      "licenseExpiry": "Date d'expiration",
+      "activeDesc": "Le chauffeur est disponible pour les courses"
+    },
+    "employee": {
+      "agency": "Agence *",
+      "selectAgency": "Sélectionner une agence",
+      "position": "Poste",
+      "selectPosition": "Sélectionner un poste",
+      "hireDate": "Date d'embauche",
+      "activeDesc": "L'employé peut accéder au système",
+      "createAccount": "Créer un compte utilisateur",
+      "createAccountLabel": "Créer un compte",
+      "createAccountDesc": "Permettre à cet employé de se connecter à l'application",
+      "accountEmail": "Email du compte *",
+      "accountPassword": "Mot de passe *",
+      "passwordPlaceholder": "Min. 6 caractères",
+      "accountValidation": "Email et mot de passe requis pour créer un compte (min 6 caractères)"
+    },
+    "agency": {
+      "agencyName": "Nom de l'agence *",
+      "agencyNamePlaceholder": "Agence Casablanca",
+      "phonePlaceholder": "+212 5XX XX XX XX",
+      "addressPlaceholder": "123 Boulevard Mohammed V",
+      "emailPlaceholder": "contact@agence.ma",
+      "editTitle": "Modifier l'agence",
+      "newTitle": "Nouvelle agence"
+    },
+    "client": {
+      "namePlaceholder": "Mohammed Alami",
+      "personalInfo": "Informations personnelles",
+      "documents": "Documents",
+      "idNumber": "CIN",
+      "idNumberPlaceholder": "AB123456",
+      "licenseNumber": "N° Permis de conduire",
+      "licenseNumberPlaceholder": "12345678",
+      "addressSection": "Adresse",
+      "internalNotes": "Notes internes",
+      "notesPlaceholder": "Notes visibles uniquement par le personnel...",
+      "editTitle": "Modifier le client",
+      "newTitle": "Nouveau client"
+    },
+    "validation": {
+      "nameRequired": "Le nom est requis",
+      "nameMin2": "Le nom doit contenir au moins 2 caractères",
+      "invalidEmail": "Email invalide",
+      "agencyRequired": "Agence requise"
+    }
   }
 }
