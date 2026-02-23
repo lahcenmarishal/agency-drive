@@ -1,0 +1,58 @@
+LICENCE COMMERCIALE — AutoRent Pro
+====================================
+
+Version 1.0 — Date d'effet : 2025
+
+Copyright (c) 2025 [Votre Nom / Société]. Tous droits réservés.
+
+1. OCTROI DE LICENCE
+--------------------
+L'achat de ce produit vous accorde une licence non exclusive, non transférable
+pour utiliser le logiciel AutoRent Pro sur UN (1) domaine de production.
+
+2. DROITS ACCORDÉS
+------------------
+Vous êtes autorisé à :
+- Installer et utiliser le logiciel sur un seul domaine
+- Modifier le code source pour l'adapter à vos besoins
+- Créer un nombre illimité de comptes utilisateurs dans l'application
+
+3. RESTRICTIONS
+---------------
+Vous n'êtes PAS autorisé à :
+- Revendre, redistribuer ou sous-licencier le logiciel
+- Partager le code source avec des tiers
+- Utiliser le logiciel sur plus d'un domaine sans licence supplémentaire
+- Supprimer ou contourner le système de vérification de licence
+- Présenter le logiciel comme votre propre création
+
+4. MISES À JOUR
+----------------
+Les mises à jour mineures sont incluses gratuitement pendant la durée de la licence.
+Les mises à jour majeures peuvent nécessiter un achat séparé.
+
+5. SUPPORT
+----------
+Le support technique est fourni selon les termes décrits dans SUPPORT.txt.
+Le niveau de support peut varier selon le plan choisi.
+
+6. GARANTIE
+-----------
+Le logiciel est fourni "tel quel" sans garantie d'aucune sorte, expresse ou
+implicite. L'auteur ne saurait être tenu responsable des dommages directs ou
+indirects résultant de l'utilisation du logiciel.
+
+7. RÉSILIATION
+--------------
+Cette licence est résiliée automatiquement si vous violez l'une de ses conditions.
+En cas de résiliation, vous devez cesser toute utilisation du logiciel et
+supprimer toutes les copies.
+
+8. LOI APPLICABLE
+-----------------
+Cette licence est régie par les lois en vigueur dans le pays de résidence de
+l'auteur.
+
+---
+
+Pour toute question concernant cette licence, contactez-nous via SUPPORT.txt.

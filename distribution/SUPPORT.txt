@@ -1,0 +1,51 @@
+=============================================
+  SUPPORT TECHNIQUE — AutoRent Pro
+=============================================
+
+Merci d'avoir acheté AutoRent Pro !
+
+CONTACT
+-------
+📧 Email : votre-email@exemple.com
+💬 Chat  : [Votre lien de messagerie]
+🌐 Site  : https://votre-site.com
+
+HORAIRES DE SUPPORT
+-------------------
+Lundi - Vendredi : 9h00 - 18h00 (GMT+1)
+Temps de réponse moyen : 24-48 heures
+
+CE QUI EST INCLUS
+-----------------
+✅ Aide à l'installation et configuration initiale
+✅ Résolution de bugs liés au produit original
+✅ Guidance pour le déploiement
+✅ Aide à l'activation de licence
+
+CE QUI N'EST PAS INCLUS
+------------------------
+❌ Personnalisation avancée du code
+❌ Ajout de nouvelles fonctionnalités sur demande
+❌ Support pour des modifications tierces
+❌ Formation individuelle
+
+AVANT DE NOUS CONTACTER
+------------------------
+1. Consultez la documentation dans le dossier docs/
+2. Vérifiez la FAQ (docs/FAQ.md)
+3. Assurez-vous d'utiliser la dernière version
+4. Préparez les informations suivantes :
+   - Votre clé de licence
+   - Description détaillée du problème
+   - Captures d'écran si applicable
+   - Messages d'erreur de la console (F12)
+
+SERVICES ADDITIONNELS (payants)
+-------------------------------
+• Installation complète sur votre serveur
+• Personnalisation de l'interface (logo, couleurs)
+• Ajout de fonctionnalités personnalisées
+• Formation en ligne
+→ Contactez-nous pour un devis
+
+=============================================
