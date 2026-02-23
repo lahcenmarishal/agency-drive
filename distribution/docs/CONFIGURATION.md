@@ -1,102 +1,102 @@
-# ⚙️ Guide de Configuration — AutoRent Pro
+# ⚙️ Configuration Guide — AutoRent Pro
 
-## Variables d'environnement
+## Environment Variables
 
-| Variable | Description | Obligatoire |
-|----------|-------------|:-----------:|
-| `VITE_SUPABASE_URL` | URL de votre projet Supabase | ✅ |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé publique (anon key) | ✅ |
-| `VITE_SUPABASE_PROJECT_ID` | ID du projet Supabase | ✅ |
+| Variable | Description | Required |
+|----------|-------------|:--------:|
+| `VITE_SUPABASE_URL` | Your Supabase project URL | ✅ |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Public key (anon key) | ✅ |
+| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID | ✅ |
 
 ---
 
-## Personnalisation de l'application
+## Application Customization
 
-### Nom et branding
+### Name and Branding
 
-Le nom de l'application est défini dans plusieurs fichiers :
+The application name is defined in several files:
 
-- `index.html` → balise `<title>`
-- `src/pages/Landing.tsx` → texte de la page d'accueil
-- `src/components/layout/Sidebar.tsx` → logo dans la barre latérale
-- `public/favicon.svg` → icône du navigateur
+- `index.html` → `<title>` tag
+- `src/pages/Landing.tsx` → landing page text
+- `src/components/layout/Sidebar.tsx` → sidebar logo
+- `public/favicon.svg` → browser icon
 
-### Thème et couleurs
+### Theme and Colors
 
-Les couleurs sont définies dans `src/index.css` via des variables CSS HSL :
+Colors are defined in `src/index.css` using HSL CSS variables:
 
 ```css
 :root {
-  --primary: 221 83% 53%;        /* Couleur principale */
-  --secondary: 210 40% 96%;      /* Couleur secondaire */
-  --accent: 210 40% 96%;         /* Couleur d'accentuation */
-  --background: 0 0% 100%;       /* Fond */
-  --foreground: 222 47% 11%;     /* Texte */
+  --primary: 221 83% 53%;        /* Primary color */
+  --secondary: 210 40% 96%;      /* Secondary color */
+  --accent: 210 40% 96%;         /* Accent color */
+  --background: 0 0% 100%;       /* Background */
+  --foreground: 222 47% 11%;     /* Text */
 }
 ```
 
-Le thème sombre est aussi configurable dans le même fichier sous `.dark { }`.
+The dark theme is also configurable in the same file under `.dark { }`.
 
-### Devise
+### Currency
 
-Pour changer la devise (par défaut DA - Dinar Algérien), recherchez `DA` dans les fichiers de composants comptabilité et locations.
-
----
-
-## Rôles utilisateurs
-
-| Rôle | Accès |
-|------|-------|
-| `super_admin` | Accès total, toutes les agences, gestion des utilisateurs |
-| `admin` | Gestion des agences assignées |
-| `agent` | Accès limité à son agence |
-
-Les rôles sont gérés dans la table `user_roles`.
+To change the currency (default MAD — Moroccan Dirham), search for `MAD` in the accounting and rental component files.
 
 ---
 
-## Configuration Supabase
+## User Roles
+
+| Role | Access |
+|------|--------|
+| `super_admin` | Full access, all agencies, user management |
+| `admin` | Manage assigned agencies |
+| `agent` | Limited access to their agency |
+
+Roles are managed in the `user_roles` table.
+
+---
+
+## Supabase Configuration
 
 ### Authentication
 
-Dans Supabase Dashboard → **Authentication → Settings** :
+In Supabase Dashboard → **Authentication → Settings**:
 
-- **Site URL** : URL de votre application déployée
-- **Redirect URLs** : Ajoutez votre domaine de production
-- **Email confirmation** : Activé par défaut (recommandé)
+- **Site URL**: Your deployed application URL
+- **Redirect URLs**: Add your production domain
+- **Email confirmation**: Enabled by default (recommended)
 
 ### Row Level Security (RLS)
 
-Toutes les tables ont des politiques RLS activées. Ne les désactivez **jamais** en production.
+All tables have RLS policies enabled. **Never** disable them in production.
 
-### Storage (optionnel)
+### Storage (Optional)
 
-Si vous souhaitez stocker des images de véhicules :
+If you want to store vehicle images:
 
-1. Créez un bucket `vehicle-images` dans Supabase Storage
-2. Configurez les politiques de lecture publique
-3. Mettez à jour le code pour utiliser le storage
+1. Create a `vehicle-images` bucket in Supabase Storage
+2. Configure public read policies
+3. Update the code to use storage
 
 ---
 
-## Système de licence
+## License System
 
-Le système de licence est configuré via :
+The license system is configured via:
 
-- **Table `licenses`** : stocke les clés et domaines autorisés
-- **Edge Function `verify-license`** : vérifie la validité
+- **`licenses` table**: stores keys and allowed domains
+- **`verify-license` Edge Function**: validates the license
 
-### Créer une licence pour un client
+### Create a License for a Client
 
 ```sql
 INSERT INTO licenses (license_key, client_name, is_active, expires_at)
-VALUES ('XXXX-XXXX-XXXX-XXXX', 'Nom du client', true, '2026-12-31');
+VALUES ('XXXX-XXXX-XXXX-XXXX', 'Client Name', true, '2026-12-31');
 ```
 
-### Bypass en développement
+### Development Bypass
 
-Le système de licence est automatiquement désactivé sur `localhost` et `127.0.0.1`.
+The license system is automatically disabled on `localhost` and `127.0.0.1`.
 
 ---
 
-> 📖 Pour le déploiement, consultez `DEPLOYMENT.md`.
+> 📖 For deployment, see `DEPLOYMENT.md`.

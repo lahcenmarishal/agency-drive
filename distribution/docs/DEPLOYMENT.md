@@ -1,26 +1,26 @@
-# 🚀 Guide de Déploiement — AutoRent Pro
+# 🚀 Deployment Guide — AutoRent Pro
 
-## Options de déploiement
+## Deployment Options
 
-| Plateforme | Difficulté | Coût | SSL gratuit |
-|------------|:----------:|:----:|:-----------:|
-| Netlify | ⭐ Facile | Gratuit | ✅ |
-| Vercel | ⭐ Facile | Gratuit | ✅ |
-| Cloudflare Pages | ⭐ Facile | Gratuit | ✅ |
-| VPS (Nginx) | ⭐⭐⭐ Avancé | Variable | Let's Encrypt |
+| Platform | Difficulty | Cost | Free SSL |
+|----------|:----------:|:----:|:--------:|
+| Netlify | ⭐ Easy | Free | ✅ |
+| Vercel | ⭐ Easy | Free | ✅ |
+| Cloudflare Pages | ⭐ Easy | Free | ✅ |
+| VPS (Nginx) | ⭐⭐⭐ Advanced | Variable | Let's Encrypt |
 
 ---
 
-## Déploiement sur Netlify (Recommandé)
+## Deploy on Netlify (Recommended)
 
-### 1. Build de production
+### 1. Production Build
 
 ```bash
 cd app/
 npm run build
 ```
 
-Le dossier `dist/` est généré.
+The `dist/` folder is generated.
 
 ### 2. Via Netlify CLI
 
@@ -31,16 +31,16 @@ netlify init
 netlify deploy --prod --dir=dist
 ```
 
-### 3. Via l'interface Netlify
+### 3. Via Netlify Dashboard
 
-1. Connectez votre repo Git sur [netlify.com](https://netlify.com)
-2. **Build command** : `npm run build`
-3. **Publish directory** : `dist`
-4. Cliquez sur **Deploy**
+1. Connect your Git repo on [netlify.com](https://netlify.com)
+2. **Build command**: `npm run build`
+3. **Publish directory**: `dist`
+4. Click **Deploy**
 
-### 4. Configuration SPA
+### 4. SPA Configuration
 
-Le fichier `public/_redirects` est déjà inclus :
+The `public/_redirects` file is already included:
 
 ```
 /*    /index.html   200
@@ -48,7 +48,7 @@ Le fichier `public/_redirects` est déjà inclus :
 
 ---
 
-## Déploiement sur Vercel
+## Deploy on Vercel
 
 ```bash
 npm install -g vercel
@@ -56,7 +56,7 @@ vercel login
 vercel --prod
 ```
 
-Créez un fichier `vercel.json` à la racine :
+Create a `vercel.json` file at the root:
 
 ```json
 {
@@ -66,30 +66,30 @@ Créez un fichier `vercel.json` à la racine :
 
 ---
 
-## Déploiement sur Cloudflare Pages
+## Deploy on Cloudflare Pages
 
-1. Connectez votre repo sur [pages.cloudflare.com](https://pages.cloudflare.com)
-2. **Build command** : `npm run build`
-3. **Build output directory** : `dist`
-4. Ajoutez les variables d'environnement dans les settings
+1. Connect your repo on [pages.cloudflare.com](https://pages.cloudflare.com)
+2. **Build command**: `npm run build`
+3. **Build output directory**: `dist`
+4. Add environment variables in the settings
 
 ---
 
-## Déploiement sur VPS (Nginx)
+## Deploy on VPS (Nginx)
 
-### 1. Build et transfert
+### 1. Build and Transfer
 
 ```bash
 npm run build
-scp -r dist/* user@votre-serveur:/var/www/autorent/
+scp -r dist/* user@your-server:/var/www/autorent/
 ```
 
-### 2. Configuration Nginx
+### 2. Nginx Configuration
 
 ```nginx
 server {
     listen 80;
-    server_name votre-domaine.com;
+    server_name your-domain.com;
     root /var/www/autorent;
     index index.html;
 
@@ -104,48 +104,48 @@ server {
 }
 ```
 
-### 3. SSL avec Let's Encrypt
+### 3. SSL with Let's Encrypt
 
 ```bash
-sudo certbot --nginx -d votre-domaine.com
+sudo certbot --nginx -d your-domain.com
 ```
 
 ---
 
-## Variables d'environnement en production
+## Production Environment Variables
 
-Assurez-vous que ces variables sont définies dans votre plateforme de déploiement :
+Make sure these variables are set in your deployment platform:
 
 ```env
-VITE_SUPABASE_URL=https://votre-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=votre_anon_key
-VITE_SUPABASE_PROJECT_ID=votre_project_id
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+VITE_SUPABASE_PROJECT_ID=your_project_id
 ```
 
-> ⚠️ Les variables `VITE_*` sont injectées au **build time**, pas au runtime. Rebuilez après chaque changement.
+> ⚠️ `VITE_*` variables are injected at **build time**, not at runtime. Rebuild after each change.
 
 ---
 
-## Domaine personnalisé
+## Custom Domain
 
-1. Ajoutez un enregistrement DNS `A` ou `CNAME` pointant vers votre hébergeur
-2. Configurez le domaine dans les settings de votre plateforme
-3. Attendez la propagation DNS (quelques minutes à 48h)
-4. Le SSL est provisionné automatiquement (Netlify/Vercel/Cloudflare)
-
----
-
-## Checklist de déploiement
-
-- [ ] Variables d'environnement configurées
-- [ ] Edge Functions déployées sur Supabase
-- [ ] Schéma SQL importé
-- [ ] Admin créé via `seed-admin`
-- [ ] Licence créée pour le domaine de production
-- [ ] SSL activé
-- [ ] Test de connexion réussi
-- [ ] Test de création de données réussi
+1. Add a DNS `A` or `CNAME` record pointing to your host
+2. Configure the domain in your platform's settings
+3. Wait for DNS propagation (a few minutes to 48h)
+4. SSL is automatically provisioned (Netlify/Vercel/Cloudflare)
 
 ---
 
-> 📖 Consultez `ACTIVATION.md` pour configurer la licence sur votre domaine.
+## Deployment Checklist
+
+- [ ] Environment variables configured
+- [ ] Edge Functions deployed on Supabase
+- [ ] SQL schema imported
+- [ ] Admin created via `seed-admin`
+- [ ] License created for the production domain
+- [ ] SSL enabled
+- [ ] Login test successful
+- [ ] Data creation test successful
+
+---
+
+> 📖 See `ACTIVATION.md` to configure the license on your domain.

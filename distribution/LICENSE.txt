@@ -1,58 +1,57 @@
-LICENCE COMMERCIALE — AutoRent Pro
+COMMERCIAL LICENSE — AutoRent Pro
 ====================================
 
-Version 1.0 — Date d'effet : 2025
+Version 1.0 — Effective Date: 2025
 
-Copyright (c) 2025 [Votre Nom / Société]. Tous droits réservés.
+Copyright (c) 2025 [Your Name / Company]. All rights reserved.
 
-1. OCTROI DE LICENCE
+1. LICENSE GRANT
 --------------------
-L'achat de ce produit vous accorde une licence non exclusive, non transférable
-pour utiliser le logiciel AutoRent Pro sur UN (1) domaine de production.
+The purchase of this product grants you a non-exclusive, non-transferable
+license to use the AutoRent Pro software on ONE (1) production domain.
 
-2. DROITS ACCORDÉS
+2. PERMITTED USES
 ------------------
-Vous êtes autorisé à :
-- Installer et utiliser le logiciel sur un seul domaine
-- Modifier le code source pour l'adapter à vos besoins
-- Créer un nombre illimité de comptes utilisateurs dans l'application
+You are authorized to:
+- Install and use the software on a single domain
+- Modify the source code to fit your needs
+- Create an unlimited number of user accounts within the application
 
 3. RESTRICTIONS
 ---------------
-Vous n'êtes PAS autorisé à :
-- Revendre, redistribuer ou sous-licencier le logiciel
-- Partager le code source avec des tiers
-- Utiliser le logiciel sur plus d'un domaine sans licence supplémentaire
-- Supprimer ou contourner le système de vérification de licence
-- Présenter le logiciel comme votre propre création
+You are NOT authorized to:
+- Resell, redistribute, or sublicense the software
+- Share the source code with third parties
+- Use the software on more than one domain without an additional license
+- Remove or bypass the license verification system
+- Present the software as your own creation
 
-4. MISES À JOUR
+4. UPDATES
 ----------------
-Les mises à jour mineures sont incluses gratuitement pendant la durée de la licence.
-Les mises à jour majeures peuvent nécessiter un achat séparé.
+Minor updates are included free of charge during the license period.
+Major updates may require a separate purchase.
 
 5. SUPPORT
 ----------
-Le support technique est fourni selon les termes décrits dans SUPPORT.txt.
-Le niveau de support peut varier selon le plan choisi.
+Technical support is provided according to the terms described in SUPPORT.txt.
+The level of support may vary depending on the selected plan.
 
-6. GARANTIE
+6. WARRANTY
 -----------
-Le logiciel est fourni "tel quel" sans garantie d'aucune sorte, expresse ou
-implicite. L'auteur ne saurait être tenu responsable des dommages directs ou
-indirects résultant de l'utilisation du logiciel.
+The software is provided "as is" without warranty of any kind, express or
+implied. The author shall not be held liable for any direct or indirect
+damages resulting from the use of the software.
 
-7. RÉSILIATION
+7. TERMINATION
 --------------
-Cette licence est résiliée automatiquement si vous violez l'une de ses conditions.
-En cas de résiliation, vous devez cesser toute utilisation du logiciel et
-supprimer toutes les copies.
+This license is automatically terminated if you violate any of its conditions.
+Upon termination, you must cease all use of the software and delete all copies.
 
-8. LOI APPLICABLE
+8. GOVERNING LAW
 -----------------
-Cette licence est régie par les lois en vigueur dans le pays de résidence de
-l'auteur.
+This license is governed by the laws in force in the country of residence
+of the author.
 
 ---
 
-Pour toute question concernant cette licence, contactez-nous via SUPPORT.txt.
+For any questions regarding this license, contact us via SUPPORT.txt.

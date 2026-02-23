@@ -1,51 +1,51 @@
 =============================================
-  SUPPORT TECHNIQUE — AutoRent Pro
+  TECHNICAL SUPPORT — AutoRent Pro
 =============================================
 
-Merci d'avoir acheté AutoRent Pro !
+Thank you for purchasing AutoRent Pro!
 
 CONTACT
 -------
-📧 Email : votre-email@exemple.com
-💬 Chat  : [Votre lien de messagerie]
-🌐 Site  : https://votre-site.com
+📧 Email : your-email@example.com
+💬 Chat  : [Your messaging link]
+🌐 Web   : https://your-website.com
 
-HORAIRES DE SUPPORT
+SUPPORT HOURS
 -------------------
-Lundi - Vendredi : 9h00 - 18h00 (GMT+1)
-Temps de réponse moyen : 24-48 heures
+Monday - Friday: 9:00 AM - 6:00 PM (GMT+1)
+Average response time: 24-48 hours
 
-CE QUI EST INCLUS
+WHAT IS INCLUDED
 -----------------
-✅ Aide à l'installation et configuration initiale
-✅ Résolution de bugs liés au produit original
-✅ Guidance pour le déploiement
-✅ Aide à l'activation de licence
+✅ Help with installation and initial setup
+✅ Bug resolution related to the original product
+✅ Deployment guidance
+✅ License activation assistance
 
-CE QUI N'EST PAS INCLUS
+WHAT IS NOT INCLUDED
 ------------------------
-❌ Personnalisation avancée du code
-❌ Ajout de nouvelles fonctionnalités sur demande
-❌ Support pour des modifications tierces
-❌ Formation individuelle
+❌ Advanced code customization
+❌ Custom feature development on demand
+❌ Support for third-party modifications
+❌ Individual training
 
-AVANT DE NOUS CONTACTER
+BEFORE CONTACTING US
 ------------------------
-1. Consultez la documentation dans le dossier docs/
-2. Vérifiez la FAQ (docs/FAQ.md)
-3. Assurez-vous d'utiliser la dernière version
-4. Préparez les informations suivantes :
-   - Votre clé de licence
-   - Description détaillée du problème
-   - Captures d'écran si applicable
-   - Messages d'erreur de la console (F12)
+1. Review the documentation in the docs/ folder
+2. Check the FAQ (docs/FAQ.md)
+3. Make sure you are using the latest version
+4. Prepare the following information:
+   - Your license key
+   - Detailed description of the issue
+   - Screenshots if applicable
+   - Browser console error messages (F12)
 
-SERVICES ADDITIONNELS (payants)
+ADDITIONAL SERVICES (paid)
 -------------------------------
-• Installation complète sur votre serveur
-• Personnalisation de l'interface (logo, couleurs)
-• Ajout de fonctionnalités personnalisées
-• Formation en ligne
-→ Contactez-nous pour un devis
+• Full installation on your server
+• Interface customization (logo, colors)
+• Custom feature development
+• Online training
+→ Contact us for a quote
 
 =============================================
