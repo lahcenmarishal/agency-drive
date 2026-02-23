@@ -285,7 +285,9 @@
     "amountPaidPlaceholder": "Entrez le montant payé",
     "confirmReturn": "Confirmer le retour",
     "period": "Période",
-    "amount": "Montant"
+    "amount": "Montant",
+    "fromReservation": "Via réservation",
+    "directRental": "Location directe"
   },
   "accounting": {
     "title": "Comptabilité",

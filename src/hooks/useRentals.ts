@@ -7,6 +7,7 @@ import { toast } from "sonner";
 export type Rental = Tables<"rentals"> & {
   clients?: { full_name: string } | null;
   vehicles?: { brand: string; model: string; registration: string } | null;
+  reservations?: { id: string; status: string; created_at: string } | null;
 };
 export type RentalInsert = TablesInsert<"rentals">;
 export type RentalUpdate = TablesUpdate<"rentals">;
@@ -22,7 +23,8 @@ export function useRentals(statusFilter?: Enums<"rental_status">) {
         .select(`
           *,
           clients (full_name),
-          vehicles (brand, model, registration)
+          vehicles (brand, model, registration),
+          reservations (id, status, created_at)
         `);
       
       if (filterByAgency) {
