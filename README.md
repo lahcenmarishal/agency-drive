@@ -59,6 +59,7 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- i18next (Bilingual system: English / French)
 
 ## How can I deploy this project?
 
