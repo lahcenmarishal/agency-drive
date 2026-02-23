@@ -285,7 +285,9 @@
     "amountPaidPlaceholder": "Enter amount paid",
     "confirmReturn": "Confirm return",
     "period": "Period",
-    "amount": "Amount"
+    "amount": "Amount",
+    "fromReservation": "From reservation",
+    "directRental": "Direct rental"
   },
   "accounting": {
     "title": "Accounting",
