@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     });
 
     const adminEmail = "admin@autorent.com";
-    const adminPassword = "23oct2022";
+    const adminPassword = "rent@698325";
 
     // Check if admin already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
