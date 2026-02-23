@@ -20,44 +20,44 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-const navigation = [
-  { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Utilisateurs", href: "/utilisateurs", icon: Shield, superAdminOnly: true },
-  
-  { name: "Agences", href: "/agences", icon: Building2, adminOnly: true },
-  { name: "Employés", href: "/employes", icon: Users, adminOnly: true },
-  { name: "Chauffeurs", href: "/chauffeurs", icon: Truck },
-  { name: "Véhicules", href: "/vehicules", icon: Car },
-  { name: "Clients", href: "/clients", icon: UserCheck },
-  { name: "Réservations", href: "/reservations", icon: CalendarClock },
-  { name: "Locations", href: "/locations", icon: Key },
-  { name: "Comptabilité", href: "/comptabilite", icon: Wallet, adminOnly: true },
-  { name: "Paramètres", href: "/parametres", icon: Settings, adminOnly: true },
-];
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { profile, role, isAdmin, isSuperAdmin, signOut } = useAuth();
   const { toast } = useToast();
 
+  const navigation = [
+    { name: t("nav.dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { name: t("nav.users"), href: "/utilisateurs", icon: Shield, superAdminOnly: true },
+    { name: t("nav.agencies"), href: "/agences", icon: Building2, adminOnly: true },
+    { name: t("nav.employees"), href: "/employes", icon: Users, adminOnly: true },
+    { name: t("nav.drivers"), href: "/chauffeurs", icon: Truck },
+    { name: t("nav.vehicles"), href: "/vehicules", icon: Car },
+    { name: t("nav.clients"), href: "/clients", icon: UserCheck },
+    { name: t("nav.reservations"), href: "/reservations", icon: CalendarClock },
+    { name: t("nav.rentals"), href: "/locations", icon: Key },
+    { name: t("nav.accounting"), href: "/comptabilite", icon: Wallet, adminOnly: true },
+    { name: t("nav.settings"), href: "/parametres", icon: Settings, adminOnly: true },
+  ];
+
   const handleLogout = async () => {
     await signOut();
     toast({
-      title: "Déconnexion",
-      description: "Vous avez été déconnecté avec succès.",
+      title: t("auth.loggedOut"),
+      description: t("auth.loggedOutDesc"),
     });
   };
 
-  // Filter navigation based on role
   const filteredNavigation = navigation.filter((item) => {
     if ((item as any).superAdminOnly && !isSuperAdmin) return false;
     if (item.adminOnly && !isAdmin) return false;
     return true;
   });
 
-  // Get user initials
   const getInitials = () => {
     if (profile?.full_name) {
       return profile.full_name
@@ -75,7 +75,7 @@ export function Sidebar() {
       className={cn(
         "fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out",
         "bg-sidebar border-r border-sidebar-border",
-        "hidden md:block", // Hide on mobile
+        "hidden md:block",
         collapsed ? "w-20" : "w-64"
       )}
     >
@@ -146,12 +146,13 @@ export function Sidebar() {
               "nav-item text-muted-foreground hover:text-foreground",
               collapsed && "justify-center px-2"
             )}
-            title={collapsed ? "Retour au site" : undefined}
+            title={collapsed ? t("nav.backToSite") : undefined}
           >
             <ExternalLink className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>Retour au site</span>}
+            {!collapsed && <span>{t("nav.backToSite")}</span>}
           </Link>
-          <div className={collapsed ? "" : ""}>
+          <div className={cn("flex items-center gap-1", collapsed ? "flex-col" : "")}>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>
@@ -177,15 +178,15 @@ export function Sidebar() {
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  {profile?.full_name || profile?.email || "Utilisateur"}
+                  {profile?.full_name || profile?.email || t("nav.user")}
                 </p>
                 <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
                   {role === "super_admin" ? (
-                    <span className="text-destructive">Super Admin</span>
+                    <span className="text-destructive">{t("nav.superAdmin")}</span>
                   ) : role === "admin" ? (
-                    <span className="text-primary">Admin Agence</span>
+                    <span className="text-primary">{t("nav.agencyAdmin")}</span>
                   ) : (
-                    <span>Employé</span>
+                    <span>{t("nav.employee")}</span>
                   )}
                 </p>
               </div>
@@ -194,7 +195,7 @@ export function Sidebar() {
               <button
                 onClick={handleLogout}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                title="Déconnexion"
+                title={t("nav.logout")}
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -204,7 +205,7 @@ export function Sidebar() {
             <button
               onClick={handleLogout}
               className="mt-3 mx-auto flex p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-              title="Déconnexion"
+              title={t("nav.logout")}
             >
               <LogOut className="h-4 w-4" />
             </button>
