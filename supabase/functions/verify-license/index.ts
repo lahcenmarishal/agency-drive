@@ -13,10 +13,41 @@ Deno.serve(async (req) => {
   try {
     const { license_key, domain } = await req.json();
 
-    if (!license_key || !domain) {
+    if (!domain) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Clé de licence et domaine requis" }),
+        JSON.stringify({ valid: false, error: "Domaine requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    // Domain-only check: verify if this domain already has an active license
+    if (!license_key) {
+      const { data: domainLicense } = await supabaseAdmin
+        .from("licenses")
+        .select("id, is_active, expires_at")
+        .eq("allowed_domain", domain)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (domainLicense) {
+        const notExpired = !domainLicense.expires_at || new Date(domainLicense.expires_at) >= new Date();
+        if (notExpired) {
+          return new Response(
+            JSON.stringify({ valid: true, message: "Domaine déjà activé" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ valid: false, error: "Aucune licence active pour ce domaine" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

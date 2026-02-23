@@ -25,8 +25,26 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem(LICENSE_STORAGE_KEY);
     if (stored === "true") {
       setIsLicensed(true);
+      setIsChecking(false);
+      return;
     }
-    setIsChecking(false);
+    // Check if this domain already has an active license on the server
+    fetch(LICENSE_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain: hostname }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.valid) {
+          localStorage.setItem(LICENSE_STORAGE_KEY, "true");
+          setIsLicensed(true);
+        }
+        setIsChecking(false);
+      })
+      .catch(() => {
+        setIsChecking(false);
+      });
   }, []);
 
   const activateLicense = async (key: string) => {
