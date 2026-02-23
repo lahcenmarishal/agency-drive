@@ -12,17 +12,16 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useClients } from "@/hooks/useClients";
 import { Loader2, Calculator } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
-const rentalSchema = z.object({
-  client_id: z.string().min(1, "Sélectionnez un client"),
-  vehicle_id: z.string().min(1, "Sélectionnez un véhicule"),
-  start_date: z.string().min(1, "Date de début requise"),
-  end_date: z.string().min(1, "Date de fin requise"),
-  daily_rate: z.coerce.number().min(0).optional(),
-  notes: z.string().optional(),
-});
-
-type RentalFormData = z.infer<typeof rentalSchema>;
+type RentalFormData = {
+  client_id: string;
+  vehicle_id: string;
+  start_date: string;
+  end_date: string;
+  daily_rate?: number;
+  notes?: string;
+};
 
 interface RentalFormProps {
   open: boolean;
@@ -30,10 +29,20 @@ interface RentalFormProps {
 }
 
 export function RentalForm({ open, onOpenChange }: RentalFormProps) {
+  const { t } = useTranslation();
   const createRental = useCreateRental();
   const { data: vehicles } = useVehicles("available");
   const { data: clients } = useClients();
   const [totalAmount, setTotalAmount] = useState<number>(0);
+
+  const rentalSchema = z.object({
+    client_id: z.string().min(1, t("forms.validation.selectClient")),
+    vehicle_id: z.string().min(1, t("forms.validation.selectVehicle")),
+    start_date: z.string().min(1, t("forms.validation.startDateRequired")),
+    end_date: z.string().min(1, t("forms.validation.endDateRequired")),
+    daily_rate: z.coerce.number().min(0).optional(),
+    notes: z.string().optional(),
+  });
 
   const form = useForm<RentalFormData>({
     resolver: zodResolver(rentalSchema),
@@ -47,7 +56,6 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
   const watchedEnd = form.watch("end_date");
   const watchedDailyRate = form.watch("daily_rate");
 
-  // Mettre à jour le tarif journalier quand le véhicule change
   useEffect(() => {
     if (watchedVehicle) {
       const vehicle = vehicles?.find((v) => v.id === watchedVehicle);
@@ -57,7 +65,6 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
     }
   }, [watchedVehicle, vehicles, form]);
 
-  // Calculer le montant total
   useEffect(() => {
     if (watchedDailyRate && watchedStart && watchedEnd) {
       const start = new Date(watchedStart);
@@ -85,14 +92,13 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
     }
   };
 
-  // Filtrer les clients non blacklistés
   const availableClients = clients?.filter((c) => !c.is_blacklisted) || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">Nouvelle location</DialogTitle>
+          <DialogTitle className="font-display">{t("forms.rental.title")}</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -102,11 +108,11 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client *</FormLabel>
+                  <FormLabel>{t("forms.rental.client")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un client" />
+                        <SelectValue placeholder={t("forms.rental.selectClient")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[200px]">
@@ -127,11 +133,11 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
               name="vehicle_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Véhicule *</FormLabel>
+                  <FormLabel>{t("forms.rental.vehicle")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un véhicule" />
+                        <SelectValue placeholder={t("forms.rental.selectVehicle")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[200px]">
@@ -153,7 +159,7 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
                 name="start_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date de début *</FormLabel>
+                    <FormLabel>{t("forms.rental.startDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -167,7 +173,7 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
                 name="end_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date de fin *</FormLabel>
+                    <FormLabel>{t("forms.rental.endDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -182,7 +188,7 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
               name="daily_rate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tarif journalier (MAD)</FormLabel>
+                  <FormLabel>{t("forms.rental.dailyRate")}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -195,7 +201,7 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
               <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <Calculator className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Montant total</p>
+                  <p className="text-sm text-muted-foreground">{t("forms.rental.totalAmount")}</p>
                   <p className="text-xl font-bold font-display text-primary">{totalAmount} MAD</p>
                 </div>
               </div>
@@ -206,9 +212,9 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>{t("forms.rental.notes")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Notes supplémentaires..." {...field} />
+                    <Textarea placeholder={t("forms.rental.notesPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -217,11 +223,11 @@ export function RentalForm({ open, onOpenChange }: RentalFormProps) {
 
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-                Annuler
+                {t("forms.cancel")}
               </Button>
               <Button type="submit" disabled={createRental.isPending} className="w-full sm:w-auto">
                 {createRental.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Créer la location
+                {t("forms.rental.createRental")}
               </Button>
             </div>
           </form>

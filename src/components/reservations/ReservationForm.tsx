@@ -12,16 +12,15 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { useClients } from "@/hooks/useClients";
 import { Loader2, Calculator } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
-const reservationSchema = z.object({
-  client_id: z.string().min(1, "Sélectionnez un client"),
-  vehicle_id: z.string().min(1, "Sélectionnez un véhicule"),
-  start_date: z.string().min(1, "Date de début requise"),
-  end_date: z.string().min(1, "Date de fin requise"),
-  notes: z.string().optional(),
-});
-
-type ReservationFormData = z.infer<typeof reservationSchema>;
+type ReservationFormData = {
+  client_id: string;
+  vehicle_id: string;
+  start_date: string;
+  end_date: string;
+  notes?: string;
+};
 
 interface ReservationFormProps {
   open: boolean;
@@ -29,10 +28,19 @@ interface ReservationFormProps {
 }
 
 export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
+  const { t } = useTranslation();
   const createReservation = useCreateReservation();
   const { data: vehicles } = useVehicles("available");
   const { data: clients } = useClients();
   const [estimatedAmount, setEstimatedAmount] = useState<number>(0);
+
+  const reservationSchema = z.object({
+    client_id: z.string().min(1, t("forms.validation.selectClient")),
+    vehicle_id: z.string().min(1, t("forms.validation.selectVehicle")),
+    start_date: z.string().min(1, t("forms.validation.startDateRequired")),
+    end_date: z.string().min(1, t("forms.validation.endDateRequired")),
+    notes: z.string().optional(),
+  });
 
   const form = useForm<ReservationFormData>({
     resolver: zodResolver(reservationSchema),
@@ -45,7 +53,6 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
   const watchedStart = form.watch("start_date");
   const watchedEnd = form.watch("end_date");
 
-  // Calculer le montant estimé
   useEffect(() => {
     if (watchedVehicle && watchedStart && watchedEnd) {
       const vehicle = vehicles?.find((v) => v.id === watchedVehicle);
@@ -76,14 +83,13 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
     }
   };
 
-  // Filtrer les clients non blacklistés
   const availableClients = clients?.filter((c) => !c.is_blacklisted) || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">Nouvelle réservation</DialogTitle>
+          <DialogTitle className="font-display">{t("forms.reservation.title")}</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -93,11 +99,11 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client *</FormLabel>
+                  <FormLabel>{t("forms.reservation.client")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un client" />
+                        <SelectValue placeholder={t("forms.reservation.selectClient")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[200px]">
@@ -118,17 +124,17 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
               name="vehicle_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Véhicule *</FormLabel>
+                  <FormLabel>{t("forms.reservation.vehicle")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un véhicule" />
+                        <SelectValue placeholder={t("forms.reservation.selectVehicle")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[200px]">
                       {vehicles?.map((vehicle) => (
                         <SelectItem key={vehicle.id} value={vehicle.id}>
-                          {vehicle.brand} {vehicle.model} - {vehicle.daily_rate} MAD/jour
+                          {vehicle.brand} {vehicle.model} - {vehicle.daily_rate} {t("forms.reservation.perDay")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -144,7 +150,7 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
                 name="start_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date de début *</FormLabel>
+                    <FormLabel>{t("forms.reservation.startDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -158,7 +164,7 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
                 name="end_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date de fin *</FormLabel>
+                    <FormLabel>{t("forms.reservation.endDate")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -172,7 +178,7 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
               <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <Calculator className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Montant estimé</p>
+                  <p className="text-sm text-muted-foreground">{t("forms.reservation.estimatedAmount")}</p>
                   <p className="text-xl font-bold font-display text-primary">{estimatedAmount} MAD</p>
                 </div>
               </div>
@@ -183,9 +189,9 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>{t("forms.reservation.notes")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Notes supplémentaires..." {...field} />
+                    <Textarea placeholder={t("forms.reservation.notesPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -194,11 +200,11 @@ export function ReservationForm({ open, onOpenChange }: ReservationFormProps) {
 
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-                Annuler
+                {t("forms.cancel")}
               </Button>
               <Button type="submit" disabled={createReservation.isPending} className="w-full sm:w-auto">
                 {createReservation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Créer la réservation
+                {t("forms.reservation.createReservation")}
               </Button>
             </div>
           </form>
