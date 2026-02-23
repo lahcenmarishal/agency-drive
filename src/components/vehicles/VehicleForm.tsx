@@ -9,24 +9,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCreateVehicle, useUpdateVehicle, Vehicle } from "@/hooks/useVehicles";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const vehicleSchema = z.object({
-  brand: z.string().min(1, "La marque est requise"),
-  model: z.string().min(1, "Le modèle est requis"),
-  registration: z.string().min(1, "L'immatriculation est requise"),
-  year: z.coerce.number().min(1900).max(2030).optional(),
-  color: z.string().optional(),
-  seats: z.coerce.number().min(1).max(50).optional(),
-  fuel_type: z.string().optional(),
-  transmission: z.string().optional(),
-  daily_rate: z.coerce.number().min(0).optional(),
-  status: z.enum(["available", "rented", "reserved", "maintenance"]).default("available"),
-  insurance_expiry: z.string().optional(),
-  registration_card_expiry: z.string().optional(),
-  technical_visit_expiry: z.string().optional(),
-});
-
-type VehicleFormData = z.infer<typeof vehicleSchema>;
+type VehicleFormData = {
+  brand: string;
+  model: string;
+  registration: string;
+  year?: number;
+  color?: string;
+  seats?: number;
+  fuel_type?: string;
+  transmission?: string;
+  daily_rate?: number;
+  status: "available" | "rented" | "reserved" | "maintenance";
+  insurance_expiry?: string;
+  registration_card_expiry?: string;
+  technical_visit_expiry?: string;
+};
 
 interface VehicleFormProps {
   open: boolean;
@@ -35,9 +34,26 @@ interface VehicleFormProps {
 }
 
 export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
+  const { t } = useTranslation();
   const createVehicle = useCreateVehicle();
   const updateVehicle = useUpdateVehicle();
   const isEditing = !!vehicle;
+
+  const vehicleSchema = z.object({
+    brand: z.string().min(1, t("forms.validation.brandRequired")),
+    model: z.string().min(1, t("forms.validation.modelRequired")),
+    registration: z.string().min(1, t("forms.validation.registrationRequired")),
+    year: z.coerce.number().min(1900).max(2030).optional(),
+    color: z.string().optional(),
+    seats: z.coerce.number().min(1).max(50).optional(),
+    fuel_type: z.string().optional(),
+    transmission: z.string().optional(),
+    daily_rate: z.coerce.number().min(0).optional(),
+    status: z.enum(["available", "rented", "reserved", "maintenance"]).default("available"),
+    insurance_expiry: z.string().optional(),
+    registration_card_expiry: z.string().optional(),
+    technical_visit_expiry: z.string().optional(),
+  });
 
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
@@ -81,24 +97,23 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
       <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">
-            {isEditing ? "Modifier le véhicule" : "Ajouter un véhicule"}
+            {isEditing ? t("forms.vehicle.editTitle") : t("forms.vehicle.newTitle")}
           </DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Informations générales */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Informations générales</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.generalInfo")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="brand"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Marque *</FormLabel>
+                      <FormLabel>{t("forms.vehicle.brand")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Dacia" {...field} />
+                        <Input placeholder={t("forms.vehicle.brandPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -109,9 +124,9 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="model"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Modèle *</FormLabel>
+                      <FormLabel>{t("forms.vehicle.model")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Duster" {...field} />
+                        <Input placeholder={t("forms.vehicle.modelPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -122,9 +137,9 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="registration"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Immatriculation *</FormLabel>
+                      <FormLabel>{t("forms.vehicle.registration")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="12345-A-1" {...field} />
+                        <Input placeholder={t("forms.vehicle.registrationPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -135,7 +150,7 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="year"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Année</FormLabel>
+                      <FormLabel>{t("forms.vehicle.year")}</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="2024" {...field} />
                       </FormControl>
@@ -148,9 +163,9 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="color"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Couleur</FormLabel>
+                      <FormLabel>{t("forms.vehicle.color")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Blanc" {...field} />
+                        <Input placeholder={t("forms.vehicle.colorPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -161,7 +176,7 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="seats"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Places</FormLabel>
+                      <FormLabel>{t("forms.vehicle.seats")}</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="5" {...field} />
                       </FormControl>
@@ -174,18 +189,18 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="fuel_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Carburant</FormLabel>
+                      <FormLabel>{t("forms.vehicle.fuelType")}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner" />
+                            <SelectValue placeholder={t("forms.vehicle.select")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Diesel">Diesel</SelectItem>
-                          <SelectItem value="Essence">Essence</SelectItem>
-                          <SelectItem value="Hybride">Hybride</SelectItem>
-                          <SelectItem value="Électrique">Électrique</SelectItem>
+                          <SelectItem value="Diesel">{t("forms.vehicle.diesel")}</SelectItem>
+                          <SelectItem value="Essence">{t("forms.vehicle.gasoline")}</SelectItem>
+                          <SelectItem value="Hybride">{t("forms.vehicle.hybrid")}</SelectItem>
+                          <SelectItem value="Électrique">{t("forms.vehicle.electric")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -197,16 +212,16 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="transmission"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Transmission</FormLabel>
+                      <FormLabel>{t("forms.vehicle.transmission")}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner" />
+                            <SelectValue placeholder={t("forms.vehicle.select")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Manuelle">Manuelle</SelectItem>
-                          <SelectItem value="Automatique">Automatique</SelectItem>
+                          <SelectItem value="Manuelle">{t("forms.vehicle.manual")}</SelectItem>
+                          <SelectItem value="Automatique">{t("forms.vehicle.automatic")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -216,16 +231,15 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
               </div>
             </div>
 
-            {/* Tarification et statut */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Tarification et statut</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.pricingStatus")}</h4>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="daily_rate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prix par jour (MAD)</FormLabel>
+                      <FormLabel>{t("forms.vehicle.dailyRate")}</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="350" {...field} />
                       </FormControl>
@@ -238,7 +252,7 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Statut</FormLabel>
+                      <FormLabel>{t("forms.vehicle.status")}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -246,10 +260,10 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="available">Disponible</SelectItem>
-                          <SelectItem value="rented">Loué</SelectItem>
-                          <SelectItem value="reserved">Réservé</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
+                          <SelectItem value="available">{t("forms.vehicle.statusAvailable")}</SelectItem>
+                          <SelectItem value="rented">{t("forms.vehicle.statusRented")}</SelectItem>
+                          <SelectItem value="reserved">{t("forms.vehicle.statusReserved")}</SelectItem>
+                          <SelectItem value="maintenance">{t("forms.vehicle.statusMaintenance")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -259,16 +273,15 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
               </div>
             </div>
 
-            {/* Documents */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">Documents (dates d'expiration)</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{t("forms.vehicle.documents")}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="insurance_expiry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Assurance</FormLabel>
+                      <FormLabel>{t("forms.vehicle.insurance")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -281,7 +294,7 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="registration_card_expiry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Carte grise</FormLabel>
+                      <FormLabel>{t("forms.vehicle.registrationCard")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -294,7 +307,7 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
                   name="technical_visit_expiry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Visite technique</FormLabel>
+                      <FormLabel>{t("forms.vehicle.technicalVisit")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -307,11 +320,11 @@ export function VehicleForm({ open, onOpenChange, vehicle }: VehicleFormProps) {
 
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-                Annuler
+                {t("forms.cancel")}
               </Button>
               <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? "Enregistrer" : "Ajouter"}
+                {isEditing ? t("forms.save") : t("forms.add")}
               </Button>
             </div>
           </form>

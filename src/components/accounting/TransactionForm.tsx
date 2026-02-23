@@ -19,17 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 import type { TransactionType } from "@/hooks/useTransactions";
 
-const formSchema = z.object({
-  type: z.enum(["income", "expense"] as const),
-  amount: z.coerce.number().positive("Montant doit être positif"),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  transaction_date: z.string().min(1, "Date requise"),
-});
-
-type FormData = z.infer<typeof formSchema>;
+type FormData = {
+  type: "income" | "expense";
+  amount: number;
+  description?: string;
+  category?: string;
+  transaction_date: string;
+};
 
 interface TransactionFormProps {
   onSubmit: (data: FormData) => void;
@@ -37,24 +36,34 @@ interface TransactionFormProps {
   isLoading?: boolean;
 }
 
-const incomeCategories = [
-  { value: "location", label: "Location" },
-  { value: "depot", label: "Dépôt de garantie" },
-  { value: "supplement", label: "Supplément" },
-  { value: "autre", label: "Autre revenu" },
-];
-
-const expenseCategories = [
-  { value: "carburant", label: "Carburant" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "assurance", label: "Assurance" },
-  { value: "taxe", label: "Taxes" },
-  { value: "salaire", label: "Salaires" },
-  { value: "loyer", label: "Loyer" },
-  { value: "autre", label: "Autre dépense" },
-];
-
 export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFormProps) {
+  const { t } = useTranslation();
+
+  const formSchema = z.object({
+    type: z.enum(["income", "expense"] as const),
+    amount: z.coerce.number().positive(t("forms.validation.amountPositive")),
+    description: z.string().optional(),
+    category: z.string().optional(),
+    transaction_date: z.string().min(1, t("forms.validation.dateRequired")),
+  });
+
+  const incomeCategories = [
+    { value: "location", label: t("forms.transaction.incomeCategories.location") },
+    { value: "depot", label: t("forms.transaction.incomeCategories.depot") },
+    { value: "supplement", label: t("forms.transaction.incomeCategories.supplement") },
+    { value: "autre", label: t("forms.transaction.incomeCategories.autre") },
+  ];
+
+  const expenseCategories = [
+    { value: "carburant", label: t("forms.transaction.expenseCategories.carburant") },
+    { value: "maintenance", label: t("forms.transaction.expenseCategories.maintenance") },
+    { value: "assurance", label: t("forms.transaction.expenseCategories.assurance") },
+    { value: "taxe", label: t("forms.transaction.expenseCategories.taxe") },
+    { value: "salaire", label: t("forms.transaction.expenseCategories.salaire") },
+    { value: "loyer", label: t("forms.transaction.expenseCategories.loyer") },
+    { value: "autre", label: t("forms.transaction.expenseCategories.autre") },
+  ];
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -77,16 +86,16 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type *</FormLabel>
+              <FormLabel>{t("forms.transaction.type")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner le type" />
+                    <SelectValue placeholder={t("forms.transaction.selectType")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="income">Revenu</SelectItem>
-                  <SelectItem value="expense">Dépense</SelectItem>
+                  <SelectItem value="income">{t("forms.transaction.income")}</SelectItem>
+                  <SelectItem value="expense">{t("forms.transaction.expense")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -100,7 +109,7 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Montant (MAD) *</FormLabel>
+                <FormLabel>{t("forms.transaction.amount")}</FormLabel>
                 <FormControl>
                   <Input type="number" step="0.01" placeholder="0.00" {...field} />
                 </FormControl>
@@ -114,7 +123,7 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
             name="transaction_date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date *</FormLabel>
+                <FormLabel>{t("forms.transaction.date")}</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -129,11 +138,11 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Catégorie</FormLabel>
+              <FormLabel>{t("forms.transaction.category")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une catégorie" />
+                    <SelectValue placeholder={t("forms.transaction.selectCategory")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -154,10 +163,10 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>{t("forms.transaction.description")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Description de la transaction..."
+                  placeholder={t("forms.transaction.descriptionPlaceholder")}
                   className="resize-none"
                   {...field}
                 />
@@ -169,10 +178,10 @@ export function TransactionForm({ onSubmit, onCancel, isLoading }: TransactionFo
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Annuler
+            {t("forms.cancel")}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            Ajouter
+            {t("forms.add")}
           </Button>
         </div>
       </form>
