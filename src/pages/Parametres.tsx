@@ -47,13 +47,6 @@ export default function Parametres() {
         </div>
       </div>
 
-      <div className="glass-card p-6 border-red-500/20">
-        <h3 className="section-title text-red-400 mb-4">{t("settings.dangerZone")}</h3>
-        <div className="flex items-center justify-between">
-          <div><p className="font-medium">{t("settings.deleteAllData")}</p><p className="text-sm text-muted-foreground">{t("settings.deleteAllDataDesc")}</p></div>
-          <Button variant="destructive" size="sm">{t("common.delete")}</Button>
-        </div>
-      </div>
     </div>
   );
 }
