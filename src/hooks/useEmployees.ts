@@ -69,8 +69,8 @@ export function useCreateEmployee() {
 
       if (employeeError) throw employeeError;
 
-      // If create_account is true AND is_active is true, create the user account via edge function
-      if (create_account && account_email && account_password && employee.is_active) {
+      // If create_account is true, always create the user account via backend function
+      if (create_account && account_email && account_password) {
         const response = await supabase.functions.invoke("create-user", {
           body: {
             email: account_email,
