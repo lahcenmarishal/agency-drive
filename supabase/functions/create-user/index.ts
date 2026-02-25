@@ -95,15 +95,33 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Verify admin belongs to the same agency
+      // Verify admin has access to the target agency (check admin_agencies + profile)
+      const targetAgencyId = agencyIdsToUse[0];
+      if (agencyIdsToUse.length !== 1) {
+        return new Response(
+          JSON.stringify({ error: "Agents must be assigned to exactly one agency" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check admin_agencies table first, then fall back to profile.agency_id
+      const { data: adminAgencies } = await supabaseAdmin
+        .from("admin_agencies")
+        .select("agency_id")
+        .eq("user_id", requestingUser.id);
+
       const { data: adminProfile } = await supabaseAdmin
         .from("profiles")
         .select("agency_id")
         .eq("user_id", requestingUser.id)
         .single();
 
-      // For agents, only one agency should be provided
-      if (agencyIdsToUse.length !== 1 || adminProfile?.agency_id !== agencyIdsToUse[0]) {
+      const accessibleAgencyIds = (adminAgencies || []).map((a: any) => a.agency_id);
+      if (adminProfile?.agency_id && !accessibleAgencyIds.includes(adminProfile.agency_id)) {
+        accessibleAgencyIds.push(adminProfile.agency_id);
+      }
+
+      if (!accessibleAgencyIds.includes(targetAgencyId)) {
         return new Response(
           JSON.stringify({ error: "Cannot create users for other agencies" }),
           { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
