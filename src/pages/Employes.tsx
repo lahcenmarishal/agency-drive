@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -217,6 +218,9 @@ export default function Employes() {
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("employees.addEmployeeTitle")}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("employees.addEmployeeTitle")}
+            </DialogDescription>
           </DialogHeader>
           <EmployeeForm
             onSubmit={handleCreate}
@@ -230,6 +234,9 @@ export default function Employes() {
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("employees.editEmployee")}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("employees.editEmployee")}
+            </DialogDescription>
           </DialogHeader>
           <EmployeeForm
             employee={editingEmployee}

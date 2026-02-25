@@ -66,11 +66,15 @@ Deno.serve(async (req) => {
 
     const { email, password, full_name, role, agency_id, agency_ids }: CreateUserRequest = await req.json();
 
+    const normalizedEmail = (email || "").trim().toLowerCase();
+    const normalizedPassword = (password || "").trim();
+    const normalizedFullName = (full_name || "").trim();
+
     // Determine which agency IDs to use
     const agencyIdsToUse = agency_ids && agency_ids.length > 0 ? agency_ids : (agency_id ? [agency_id] : []);
 
     // Validate input
-    if (!email || !password || !full_name || !role || agencyIdsToUse.length === 0) {
+    if (!normalizedEmail || !normalizedPassword || !normalizedFullName || !role || agencyIdsToUse.length === 0) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -137,7 +141,7 @@ Deno.serve(async (req) => {
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const userExists = existingUsers?.users?.some(
-      (user) => user.email === email
+      (user) => user.email?.toLowerCase() === normalizedEmail
     );
 
     if (userExists) {
@@ -149,11 +153,11 @@ Deno.serve(async (req) => {
 
     // Create the new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
+      email: normalizedEmail,
+      password: normalizedPassword,
       email_confirm: true,
       user_metadata: {
-        full_name,
+        full_name: normalizedFullName,
       },
     });
 
@@ -162,6 +166,23 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: createError.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Force password update to guarantee credentials are stored as expected
+    const { error: passwordSyncError } = await supabaseAdmin.auth.admin.updateUserById(newUser.user.id, {
+      password: normalizedPassword,
+      email: normalizedEmail,
+      user_metadata: {
+        full_name: normalizedFullName,
+      },
+    });
+
+    if (passwordSyncError) {
+      console.error("Error syncing credentials:", passwordSyncError);
+      return new Response(
+        JSON.stringify({ error: "Impossible de finaliser les identifiants du compte" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -192,8 +213,8 @@ Deno.serve(async (req) => {
       .upsert(
         {
           user_id: newUser.user.id,
-          full_name,
-          email,
+          full_name: normalizedFullName,
+          email: normalizedEmail,
           agency_id: primaryAgencyId,
         },
         { onConflict: "user_id" }
