@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Users, Plus, Search, Mail, Building2, Shield, CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { AdminBillingPanel } from "@/components/billing/AdminBillingPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -183,6 +184,9 @@ export default function UsersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Super Admin Billing Panel */}
+      <AdminBillingPanel />
     </div>
   );
 }
