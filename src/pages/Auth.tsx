@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ export default function Auth() {
   const { t } = useTranslation();
   const { user, isLoading, signIn } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const onboarded = searchParams.get("onboarded") === "true";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -56,6 +58,12 @@ export default function Auth() {
           <h1 className="font-display text-3xl font-bold text-foreground">AutoRent</h1>
           <p className="text-muted-foreground mt-1">{t("auth.vehicleRentalManagement")}</p>
         </div>
+
+        {onboarded && (
+          <div className="mb-4 p-4 rounded-lg bg-success/10 border border-success/20 text-center">
+            <p className="text-sm font-medium text-success">🎉 Votre compte a été créé avec succès ! Connectez-vous avec vos identifiants.</p>
+          </div>
+        )}
 
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">

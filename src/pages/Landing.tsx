@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -312,7 +313,7 @@ const Landing = () => {
       {/* Pricing Section */}
       <section className="py-16 md:py-24 px-4">
         <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
                 <Sparkles className="w-4 h-4 text-primary" />
@@ -327,40 +328,55 @@ const Landing = () => {
               </p>
             </div>
 
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
-              <CardContent className="p-5 sm:p-8 md:p-10">
-                <div className="space-y-3 sm:space-y-4 mb-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    {["annual", "custom", "support", "updates", "noHidden"].map((key, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/50">
-                        <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
-                          <BadgeCheck className="w-4 h-4 text-success" />
-                        </div>
-                        <span className="text-foreground font-medium text-sm sm:text-base">{t(`landing.pricingPoints.${key}`)}</span>
+            {/* Plan cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {[
+                { key: "basic", icon: CheckCircle2, price: 29, features: ["10 véhicules", "3 utilisateurs", "1 agence", "Rapports basiques", "Support email"] },
+                { key: "pro", icon: BadgeCheck, price: 59, popular: true, features: ["50 véhicules", "10 utilisateurs", "3 agences", "Analytics avancés", "Support prioritaire", "Branding personnalisé"] },
+                { key: "enterprise", icon: Building2, price: 99, features: ["Véhicules illimités", "Utilisateurs illimités", "Agences illimitées", "Suite analytics complète", "Support dédié", "Intégrations personnalisées"] },
+              ].map((plan) => (
+                <Card key={plan.key} className={`relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 ${plan.popular ? "border-primary/50 shadow-xl" : ""}`}>
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 px-3 py-1 bg-primary text-xs font-bold text-primary-foreground rounded-bl-lg">
+                      POPULAIRE
+                    </div>
+                  )}
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`p-2 rounded-lg ${plan.popular ? "bg-primary" : "bg-primary/10"}`}>
+                        <plan.icon className={`w-5 h-5 ${plan.popular ? "text-primary-foreground" : "text-primary"}`} />
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <h3 className="text-xl font-display font-bold text-foreground capitalize">{plan.key}</h3>
+                    </div>
+                    <div className="mb-4">
+                      <span className="text-3xl font-bold text-foreground">${plan.price}</span>
+                      <span className="text-muted-foreground">/mois</span>
+                    </div>
+                    <ul className="space-y-2 mb-6">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to={`/onboarding?plan=${plan.key}`}>
+                      <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
+                        Commencer avec {plan.key === "basic" ? "Basic" : plan.key === "pro" ? "Pro" : "Enterprise"}
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-                <div className="flex justify-center">
-                  <div className="w-full max-w-md p-5 sm:p-6 rounded-2xl bg-card border border-border shadow-lg text-center">
-                    <p className="text-muted-foreground mb-4 text-sm">
-                      {t("landing.discoverSolution")}
-                    </p>
-                    <DemoRequestForm className="w-full" />
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-border/50">
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/10">
-                    <Shield className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">{t("landing.transparency")}</span> {t("landing.transparencyDesc")}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/10 max-w-4xl mx-auto">
+              <Shield className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">{t("landing.transparency")}</span> {t("landing.transparencyDesc")}
+              </p>
+            </div>
           </div>
         </div>
       </section>
