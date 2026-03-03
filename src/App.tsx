@@ -9,6 +9,7 @@ import { LicenseProvider } from "@/contexts/LicenseContext";
 import { AgencyFilterProvider } from "@/contexts/AgencyFilterContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SubscriptionGuard } from "@/components/SubscriptionGuard";
 import { LicenseGuard } from "@/components/LicenseGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Landing from "./pages/Landing";
@@ -53,9 +54,11 @@ const App = () => (
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Dashboard />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Dashboard />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -63,9 +66,11 @@ const App = () => (
                 path="/agences"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Agences />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Agences />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -73,9 +78,11 @@ const App = () => (
                 path="/agences/:id"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <AgenceDetails />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <AgenceDetails />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -83,9 +90,11 @@ const App = () => (
                 path="/employes"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Employes />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Employes />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -93,9 +102,11 @@ const App = () => (
                 path="/chauffeurs"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Chauffeurs />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Chauffeurs />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -103,9 +114,11 @@ const App = () => (
                 path="/vehicules"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Vehicules />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Vehicules />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -113,9 +126,11 @@ const App = () => (
                 path="/clients"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Clients />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Clients />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -123,9 +138,11 @@ const App = () => (
                 path="/reservations"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Reservations />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Reservations />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -133,9 +150,11 @@ const App = () => (
                 path="/locations"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Locations />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Locations />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -143,9 +162,11 @@ const App = () => (
                 path="/comptabilite"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <Comptabilite />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <Comptabilite />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
@@ -163,9 +184,11 @@ const App = () => (
                 path="/utilisateurs"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
-                      <UsersManagement />
-                    </AppLayout>
+                    <SubscriptionGuard>
+                      <AppLayout>
+                        <UsersManagement />
+                      </AppLayout>
+                    </SubscriptionGuard>
                   </ProtectedRoute>
                 }
               />
