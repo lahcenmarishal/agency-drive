@@ -50,20 +50,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Super admins bypass subscription checks
+    // Super admins don't have subscriptions - they manage them
     if (isSuperAdmin) {
-      setSubscription({
-        subscribed: true,
-        plan: "enterprise",
-        status: "active",
-        subscription_end: null,
-        max_vehicles: -1,
-        max_users: -1,
-        max_agencies: -1,
-        billing_interval: null,
-        amount: null,
-        currency: null,
-      });
+      setSubscription(null);
       setIsLoading(false);
       return;
     }
@@ -98,10 +87,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [user, refreshSubscription]);
 
-  const isActive = subscription?.subscribed === true ||
+  const isActive = isSuperAdmin ||
+    subscription?.subscribed === true ||
     subscription?.status === "active" ||
-    subscription?.status === "trialing" ||
-    isSuperAdmin;
+    subscription?.status === "trialing";
 
   const planName = subscription?.plan || "none";
 

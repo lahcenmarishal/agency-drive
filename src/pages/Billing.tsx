@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, CreditCard, Loader2, Crown, Zap, Building2, RefreshCw, ExternalLink } from "lucide-react";
+import { Check, CreditCard, Loader2, Crown, Zap, Building2, RefreshCw, ExternalLink, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +87,20 @@ export default function Billing() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Expired subscription warning */}
+      {!isActive && !isLoading && (
+        <div className="glass-card p-6 border-destructive/50 bg-destructive/5">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-destructive shrink-0" />
+            <div>
+              <h2 className="text-lg font-semibold text-destructive">Abonnement expiré</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Votre abonnement a expiré. Veuillez renouveler votre plan pour continuer à utiliser toutes les fonctionnalités de l'application.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold font-display">Billing & Subscription</h1>
