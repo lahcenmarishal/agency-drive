@@ -297,6 +297,63 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_registrations: {
+        Row: {
+          agency_address: string | null
+          agency_city: string | null
+          agency_email: string | null
+          agency_name: string
+          agency_phone: string | null
+          billing_interval: string
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          password_hash: string
+          plan_key: string
+          price_id: string
+          status: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          agency_address?: string | null
+          agency_city?: string | null
+          agency_email?: string | null
+          agency_name: string
+          agency_phone?: string | null
+          billing_interval?: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          full_name: string
+          id?: string
+          password_hash: string
+          plan_key?: string
+          price_id: string
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          agency_address?: string | null
+          agency_city?: string | null
+          agency_email?: string | null
+          agency_name?: string
+          agency_phone?: string | null
+          billing_interval?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          password_hash?: string
+          plan_key?: string
+          price_id?: string
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           agency_id: string | null
