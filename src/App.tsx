@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LicenseProvider } from "@/contexts/LicenseContext";
 import { AgencyFilterProvider } from "@/contexts/AgencyFilterContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LicenseGuard } from "@/components/LicenseGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -25,6 +26,7 @@ import Parametres from "./pages/Parametres";
 import Auth from "./pages/Auth";
 import AdminAuth from "./pages/AdminAuth";
 import UsersManagement from "./pages/UsersManagement";
+import Billing from "./pages/Billing";
 
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
@@ -38,6 +40,7 @@ const App = () => (
         <BrowserRouter>
           <LicenseProvider>
           <AuthProvider>
+          <SubscriptionProvider>
           <AgencyFilterProvider>
             <LicenseGuard>
             <Routes>
@@ -164,10 +167,21 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/billing"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Billing />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LicenseGuard>
           </AgencyFilterProvider>
+          </SubscriptionProvider>
         </AuthProvider>
         </LicenseProvider>
       </BrowserRouter>

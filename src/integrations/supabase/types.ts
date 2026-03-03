@@ -488,6 +488,77 @@ export type Database = {
           },
         ]
       }
+      tenant_subscriptions: {
+        Row: {
+          agency_id: string
+          amount: number | null
+          billing_interval: string
+          created_at: string
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          max_agencies: number
+          max_users: number
+          max_vehicles: number
+          plan_name: string
+          price_id: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          amount?: number | null
+          billing_interval?: string
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          max_agencies?: number
+          max_users?: number
+          max_vehicles?: number
+          plan_name?: string
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          amount?: number | null
+          billing_interval?: string
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          max_agencies?: number
+          max_users?: number
+          max_vehicles?: number
+          plan_name?: string
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: true
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           agency_id: string

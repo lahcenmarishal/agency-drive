@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,7 @@ export function MobileSidebar() {
     { name: t("nav.reservations"), href: "/reservations", icon: CalendarClock },
     { name: t("nav.rentals"), href: "/locations", icon: Key },
     { name: t("nav.accounting"), href: "/comptabilite", icon: Wallet, adminOnly: true },
+    { name: "Billing", href: "/billing", icon: CreditCard, adminOnly: true },
     { name: t("nav.settings"), href: "/parametres", icon: Settings, adminOnly: true },
   ];
 
