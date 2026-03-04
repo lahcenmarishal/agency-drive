@@ -45,7 +45,7 @@ export function MobileSidebar() {
     { name: t("nav.reservations"), href: "/reservations", icon: CalendarClock },
     { name: t("nav.rentals"), href: "/locations", icon: Key },
     { name: t("nav.accounting"), href: "/comptabilite", icon: Wallet, adminOnly: true },
-    { name: "Billing", href: "/billing", icon: CreditCard, adminOnly: true },
+    { name: "Billing", href: "/billing", icon: CreditCard, adminOnly: true, hideForSuperAdmin: true },
     { name: t("nav.settings"), href: "/parametres", icon: Settings, adminOnly: true },
   ];
 
@@ -60,6 +60,7 @@ export function MobileSidebar() {
 
   const filteredNavigation = navigation.filter((item) => {
     if ((item as any).superAdminOnly && !isSuperAdmin) return false;
+    if ((item as any).hideForSuperAdmin && isSuperAdmin) return false;
     if (item.adminOnly && !isAdmin) return false;
     return true;
   });

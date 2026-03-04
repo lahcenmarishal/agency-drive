@@ -8,6 +8,14 @@
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Public key (anon key) | ✅ |
 | `VITE_SUPABASE_PROJECT_ID` | Supabase project ID | ✅ |
 
+### Edge Function Secrets
+
+| Secret | Description | Required |
+|--------|-------------|:--------:|
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | ✅ |
+| `STRIPE_SECRET_KEY` | Stripe secret API key | ✅ |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | ✅ |
+
 ---
 
 ## Application Customization
@@ -41,28 +49,39 @@ Colors are defined in `src/index.css` using HSL CSS variables:
 }
 ```
 
-The dark theme is also configurable under `.dark { }` in the same file.
-
-**To change the primary brand color:**
-1. Choose your HSL color values
-2. Update `--primary` in both `:root` and `.dark`
-3. The entire application will update automatically
-
 ### Currency
 
 The default currency is **USD ($)**. To change it:
 1. Search for `$` in accounting and rental component files
 2. Replace with your currency symbol
-3. For full localization, add currency formatting to the i18n configuration
+3. Update `src/config/subscriptionPlans.ts` with correct prices
 
-### Language
+### Subscription Plans
 
-AutoRent Pro ships with **English** and **French**. To add a new language:
+Plans are defined in `src/config/subscriptionPlans.ts`:
 
-1. Copy `src/i18n/locales/en.json` to `src/i18n/locales/[lang].json`
-2. Translate all string values
-3. Register the new locale in `src/i18n/index.ts`
-4. Add the language option to `src/components/LanguageSwitcher.tsx`
+```typescript
+export const PLANS = {
+  basic: {
+    name: "Basic",
+    productId: "prod_...",
+    monthlyPriceId: "price_...",
+    yearlyPriceId: "price_...",
+    monthlyPrice: 29,
+    yearlyPrice: 290,
+    maxVehicles: 10,
+    maxUsers: 3,
+    maxAgencies: 1,
+    features: [...],
+  },
+  // pro, enterprise...
+};
+```
+
+To customize:
+1. Create products and prices in your Stripe Dashboard
+2. Update the IDs in `subscriptionPlans.ts`
+3. Adjust limits and pricing as needed
 
 ---
 
@@ -70,11 +89,9 @@ AutoRent Pro ships with **English** and **French**. To add a new language:
 
 | Role | Access Level |
 |------|-------------|
-| `super_admin` | Full access to all agencies, user management, system settings |
-| `admin` | Manage assigned agencies, create agents, accounting access |
-| `agent` | Limited access to their agency only (no accounting, no settings) |
-
-Roles are stored in the `user_roles` table and enforced via database RLS policies.
+| `super_admin` | Full access to all agencies, user management, subscription management. **No subscription required.** |
+| `admin` | Manage assigned agencies, create agents, accounting access. **Requires active subscription.** |
+| `agent` | Limited access to their agency only (no accounting, no settings). Inherits subscription from agency. |
 
 ### Creating Users
 
@@ -82,71 +99,58 @@ Roles are stored in the `user_roles` table and enforced via database RLS policie
 
 Created during installation using the `seed-admin` Edge Function. See [INSTALLATION.md](INSTALLATION.md), Step 6.
 
-#### 2. Agency Admins
+#### 2. Agency Admins (with subscription)
 
 1. Log in as **Super Admin**
 2. Navigate to **Users** in the sidebar
 3. Click **"Create Admin"**
 4. Fill in: name, email, password
 5. Select one or more agencies to assign
-6. The admin can log in immediately
+6. **Select subscription plan** (Basic, Pro, Enterprise) and billing interval
+7. The admin + subscription are created immediately
 
-#### 3. Agents (Employee Accounts)
+#### 3. Self-Service Registration (from Landing Page)
+
+1. Customer visits the landing page and clicks a plan
+2. Fills out registration form (personal info + agency details)
+3. Completes Stripe Checkout
+4. Account, agency, and subscription are created automatically
+
+#### 4. Agents (Employee Accounts)
 
 1. Log in as **Super Admin** or **Agency Admin**
 2. Navigate to **Employees**
 3. Click **"Add Employee"**
 4. Fill in employee details
 5. Check **"Create user account"** to enable login
-6. Set a password — the employee can then log in
-
-> **Note:** Admins can only create agents within their assigned agencies. Only Super Admins can create other admins.
 
 ---
 
-## Supabase Configuration
+## Stripe Configuration
 
-### Authentication Settings
+### Required Setup
 
-In Supabase Dashboard → **Authentication → Settings**:
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Create 3 products (Basic, Pro, Enterprise) with monthly and yearly prices
+3. Set up a webhook endpoint pointing to your Edge Function URL
+4. Configure the webhook to listen for `checkout.session.completed`
+5. Copy your API keys and webhook secret to Edge Function secrets
 
-| Setting | Recommended Value |
-|---------|------------------|
-| Site URL | Your deployed application URL |
-| Redirect URLs | Your production domain |
-| Email confirmation | Enabled (recommended) |
-| Password minimum length | 8 characters |
-
-### Row Level Security (RLS)
-
-All tables have RLS policies enabled. **Never disable them in production.**
-
-The RLS architecture uses Security Definer functions to prevent recursive policy evaluation:
+### Webhook URL
 
 ```
-can_access_agency(user_id, agency_id)
-├── is_super_admin(user_id)          → Always true
-├── admin_has_agency_access(user_id)  → Check admin_agencies table
-└── get_user_agency_id(user_id)       → Check profiles.agency_id
+https://YOUR_PROJECT_ID.supabase.co/functions/v1/stripe-webhook
 ```
 
-### Storage (Optional)
+### Webhook Events
 
-To enable vehicle image uploads:
+| Event | Handling |
+|-------|---------|
+| `checkout.session.completed` | Creates agency + user + subscription for onboarding; updates subscription for existing users |
 
-1. Create a `vehicle-images` bucket in Supabase Storage
-2. Configure public read policies:
-   ```sql
-   CREATE POLICY "Public read for vehicle images"
-   ON storage.objects FOR SELECT
-   USING (bucket_id = 'vehicle-images');
-   ```
-3. Configure authenticated upload policies:
-   ```sql
-   CREATE POLICY "Authenticated users can upload vehicle images"
-   ON storage.objects FOR INSERT
-   WITH CHECK (bucket_id = 'vehicle-images' AND auth.role() = 'authenticated');
-   ```
+### Customer Portal
+
+Users can manage their billing via the Stripe Customer Portal. Configure it in Stripe Dashboard → Settings → Billing → Customer Portal.
 
 ---
 
@@ -167,49 +171,12 @@ The license system is **automatically disabled** on:
 - `127.0.0.1`
 - Any `.lovable.app` domain
 
-### Creating a License
-
-```sql
-INSERT INTO licenses (license_key, allowed_domain, client_name, is_active, expires_at)
-VALUES (
-  'XXXX-XXXX-XXXX-XXXX',
-  'client-domain.com',
-  'Client Company Name',
-  true,
-  '2026-12-31'
-);
-```
-
 ### Disabling the License System
 
 To completely remove the license check:
 1. Remove `<LicenseGuard>` from `src/App.tsx`
 2. Delete the `LicenseContext.tsx` file
 3. Remove the `verify-license` Edge Function
-
----
-
-## Advanced Configuration
-
-### API Rate Limiting
-
-Supabase applies default rate limits. For production:
-- Free tier: 500 requests/minute
-- Pro tier: 10,000 requests/minute
-- Adjust in Supabase Dashboard → Settings → API
-
-### Email Configuration
-
-For production email delivery (password resets, invitations):
-1. Configure a custom SMTP provider in Supabase Auth settings
-2. Recommended providers: Resend, SendGrid, Postmark
-3. Update email templates in Supabase Dashboard → Authentication → Email Templates
-
-### Backup Strategy
-
-- Supabase Pro plan includes daily backups
-- For additional safety, schedule regular `pg_dump` exports
-- Export critical tables periodically via the dashboard
 
 ---
 

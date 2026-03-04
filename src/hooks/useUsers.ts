@@ -9,6 +9,8 @@ interface CreateUserData {
   full_name: string;
   role: "admin" | "agent";
   agency_ids: string[];
+  plan_key?: string;
+  billing_interval?: string;
 }
 
 interface UpdateUserData {

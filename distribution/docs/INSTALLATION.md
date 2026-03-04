@@ -7,6 +7,7 @@
 | Node.js | 18+ | [Download](https://nodejs.org) |
 | npm / yarn / bun | Latest | Included with Node.js |
 | Supabase | Free or paid | [Create account](https://supabase.com) |
+| Stripe | Account required | [Create account](https://stripe.com) |
 | Git | 2.x+ | [Download](https://git-scm.com) |
 
 ---
@@ -37,25 +38,37 @@ You should see the following tables:
 - `vehicles`, `clients`, `drivers`, `employees`
 - `reservations`, `rentals`, `transactions`
 - `blacklist_notes`, `licenses`
+- `tenant_subscriptions`, `pending_registrations`
 
 ---
 
-## Step 3: Install the Source Code
+## Step 3: Configure Stripe
+
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Create 3 products with monthly + yearly prices:
+   - **Basic** — $29/mo, $290/yr
+   - **Pro** — $59/mo, $590/yr
+   - **Enterprise** — $99/mo, $990/yr
+3. Copy the product IDs and price IDs
+4. Update `src/config/subscriptionPlans.ts` with your IDs
+5. Set up a webhook:
+   - URL: `https://YOUR_PROJECT_ID.supabase.co/functions/v1/stripe-webhook`
+   - Events: `checkout.session.completed`
+6. Copy the webhook signing secret
+
+---
+
+## Step 4: Install the Source Code
 
 ```bash
-# Navigate to the app directory
 cd app/
-
-# Install dependencies
 npm install
-
-# Copy the environment file
 cp .env.example .env
 ```
 
 ---
 
-## Step 4: Configure Environment Variables
+## Step 5: Configure Environment Variables
 
 Edit the `.env` file at the project root:
 
@@ -65,22 +78,13 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key_here
 VITE_SUPABASE_PROJECT_ID=your_project_id_here
 ```
 
-> ⚠️ **Important:** Never commit your `.env` file to version control. The `.gitignore` file is already configured to exclude it.
-
 ---
 
-## Step 5: Deploy Edge Functions
-
-AutoRent Pro uses Supabase Edge Functions for secure server-side operations.
+## Step 6: Deploy Edge Functions
 
 ```bash
-# Install the Supabase CLI
 npm install -g supabase
-
-# Log in to your Supabase account
 supabase login
-
-# Link to your project
 supabase link --project-ref YOUR_PROJECT_ID
 
 # Deploy all Edge Functions
@@ -88,21 +92,24 @@ supabase functions deploy verify-license
 supabase functions deploy create-user
 supabase functions deploy manage-user
 supabase functions deploy seed-admin
+supabase functions deploy create-checkout
+supabase functions deploy check-subscription
+supabase functions deploy customer-portal
+supabase functions deploy onboard-checkout
+supabase functions deploy stripe-webhook
 ```
 
 ### Edge Function Secrets
 
-Set the required secrets for Edge Functions:
-
 ```bash
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+supabase secrets set STRIPE_SECRET_KEY=your_stripe_secret_key
+supabase secrets set STRIPE_WEBHOOK_SECRET=your_webhook_signing_secret
 ```
 
 ---
 
-## Step 6: Create the First Administrator
-
-The first Super Admin account is created using the `seed-admin` Edge Function:
+## Step 7: Create the First Administrator
 
 ```bash
 curl -X POST "https://YOUR_PROJECT_ID.supabase.co/functions/v1/seed-admin" \
@@ -114,16 +121,11 @@ curl -X POST "https://YOUR_PROJECT_ID.supabase.co/functions/v1/seed-admin" \
   }'
 ```
 
-**Password Requirements:**
-- Minimum 8 characters
-- At least one uppercase letter
-- At least one number
-
-After creating the Super Admin, you can log in and create additional users through the application interface.
+> **Note:** The Super Admin does NOT need a subscription. They manage all agency subscriptions from the Users panel.
 
 ---
 
-## Step 7: Run in Development
+## Step 8: Run in Development
 
 ```bash
 npm run dev
@@ -131,53 +133,27 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
-### Default Login
-
-Use the credentials you set in Step 6 to log in as Super Admin.
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-| Problem | Solution |
-|---------|----------|
-| "Invalid login credentials" | Verify email/password are correct. Check that the `seed-admin` function executed successfully. |
-| Tables not visible | Re-run the `schema.sql` in SQL Editor. Check for error messages. |
-| Edge Functions not working | Ensure you've set the `SUPABASE_SERVICE_ROLE_KEY` secret. Check function logs in the Supabase dashboard. |
-| CORS errors | Verify your `VITE_SUPABASE_URL` is correct. Ensure your domain is allowed in Supabase Auth settings. |
-| Blank screen after login | Check browser console for errors. Ensure all tables and RLS policies were created. |
-| "User already registered" | The email is already in use. Use a different email or reset the password. |
-
-### Verifying the Installation
-
-1. ✅ Open `http://localhost:5173` — Landing page loads
-2. ✅ Click "Login" — Auth page loads
-3. ✅ Log in with Super Admin credentials — Dashboard loads
-4. ✅ Navigate to Agencies — Create a test agency
-5. ✅ Navigate to Vehicles — Add a test vehicle
-6. ✅ Check dark mode toggle — Theme switches correctly
-
 ---
 
 ## Post-Installation Checklist
 
 - [ ] Supabase project created
-- [ ] Database schema imported (all 13 tables visible)
-- [ ] Edge Functions deployed (4 functions)
+- [ ] Database schema imported (all 15 tables visible)
+- [ ] Edge Functions deployed (9 functions)
+- [ ] Stripe products and prices created
+- [ ] Stripe webhook configured
 - [ ] `.env` file configured with correct keys
+- [ ] Edge Function secrets set (service role, Stripe keys)
 - [ ] Super Admin account created and tested
 - [ ] Application launches without console errors
 - [ ] At least one agency created
-- [ ] Dark/Light theme toggle works
-- [ ] Language switcher works (EN/FR)
+- [ ] Subscription flow tested (landing → checkout → auto-provision)
 
 ---
 
 ## What's Next?
 
-- 📖 **[CONFIGURATION.md](CONFIGURATION.md)** — Customize branding, colors, and settings
+- 📖 **[CONFIGURATION.md](CONFIGURATION.md)** — Customize branding, colors, plans, and settings
 - 🔑 **[ACTIVATION.md](ACTIVATION.md)** — Set up the license system
 - 🚀 **[DEPLOYMENT.md](DEPLOYMENT.md)** — Deploy to production
 - ❓ **[FAQ.md](FAQ.md)** — Common questions and answers
