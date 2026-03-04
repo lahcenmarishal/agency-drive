@@ -10,7 +10,7 @@
 
 **AutoRent Pro** is a complete, production-ready car rental management system built with **React 18**, **TypeScript**, and **Supabase**. Designed for car rental agencies of all sizes — from single-location startups to multi-agency enterprises.
 
-Launch your own car rental SaaS platform in minutes with a fully featured dashboard, role-based access control, fleet management, bookings, accounting, and more.
+Launch your own car rental SaaS platform in minutes with a fully featured dashboard, role-based access control, fleet management, bookings, accounting, **Stripe-powered subscriptions**, and more.
 
 ---
 
@@ -22,7 +22,7 @@ Launch your own car rental SaaS platform in minutes with a fully featured dashbo
 
 2. **True Multi-Role Architecture** — Three distinct user roles (Super Admin → Agency Admin → Employee) with granular, database-enforced permissions. Each role sees only what they should — no hacky client-side checks.
 
-3. **SaaS-Ready & Scalable** — Built on Supabase (PostgreSQL), it scales from a single agency to hundreds. Add a license system, connect a payment gateway, and you have a full SaaS product.
+3. **SaaS-Ready with Stripe** — Built-in subscription management with 3 plans (Basic, Pro, Enterprise), self-service onboarding, and a Super Admin panel for manual subscription control. Start monetizing immediately.
 
 ### 🥊 Competitive Advantages
 
@@ -30,6 +30,7 @@ Launch your own car rental SaaS platform in minutes with a fully featured dashbo
 |---|---|
 | Real multi-agency with RLS isolation | Single-tenant, no data isolation |
 | 3-tier role system (Super Admin/Admin/Agent) | Basic admin/user only |
+| Built-in Stripe subscriptions & onboarding | No monetization tools |
 | Modern React 18 + TypeScript + Tailwind | jQuery or outdated frameworks |
 | Supabase backend (auto-scales) | PHP/MySQL with manual server management |
 | Built-in license system for reselling | No monetization tools |
@@ -50,15 +51,24 @@ Launch your own car rental SaaS platform in minutes with a fully featured dashbo
 ## 🚀 Key Features
 
 ### 📊 Multi-Role Dashboard Architecture
-- **Super Admin Dashboard** — Full overview across all agencies, user management, system settings
+- **Super Admin Dashboard** — Full overview across all agencies, user management, subscription management
 - **Agency Admin Dashboard** — Agency-specific metrics, employee management, fleet oversight
 - **Employee Dashboard** — Day-to-day operations: rentals, reservations, client management
+
+### 💳 SaaS Subscription System (Stripe)
+- **3 Plans**: Basic ($29/mo), Pro ($59/mo), Enterprise ($99/mo) with yearly discounts
+- **Self-Service Onboarding**: New customers register, pay, and get instant access
+- **Feature Gating**: Vehicle, user, and agency limits enforced per plan
+- **Subscription Guard**: Expired accounts redirected to billing page
+- **Super Admin Control**: Manually create, modify, extend, or cancel subscriptions
+- **Stripe Customer Portal**: Users manage their own billing, payment methods, and cancellations
 
 ### 🔐 Role-Based Access Control (RBAC)
 - Three-tier hierarchy: Super Admin → Agency Admin → Employee (Agent)
 - Database-enforced permissions via PostgreSQL Row Level Security (RLS)
 - Security definer functions prevent privilege escalation
 - Each user sees only data they're authorized to access
+- **Super Admin never has a subscription** — manages all agency subscriptions
 
 ### 🚗 Vehicle Fleet Management
 - Complete vehicle registry with brand, model, year, registration
@@ -135,6 +145,7 @@ Launch your own car rental SaaS platform in minutes with a fully featured dashbo
 | **Tailwind CSS** | Utility-first styling with custom design system |
 | **shadcn/ui** | Premium UI components (40+ components) |
 | **Supabase** | Backend: PostgreSQL, Auth, Edge Functions, RLS |
+| **Stripe** | Subscription billing, checkout, customer portal |
 | **TanStack Query v5** | Server state management & caching |
 | **React Router v6** | Client-side routing with protected routes |
 | **Recharts** | Data visualization & charts |
@@ -144,7 +155,6 @@ Launch your own car rental SaaS platform in minutes with a fully featured dashbo
 | **Lucide React** | Beautiful icon library |
 | **date-fns** | Date manipulation & formatting |
 | **Sonner** | Toast notifications |
-| **Framer Motion** | Smooth animations |
 
 ---
 
@@ -167,19 +177,26 @@ AutoRent-Pro/
 │   │   │   ├── drivers/         # Driver components
 │   │   │   ├── agencies/        # Agency components
 │   │   │   ├── users/           # User management components
+│   │   │   ├── billing/         # Subscription management (AdminBillingPanel)
 │   │   │   └── landing/         # Landing page components
-│   │   ├── pages/               # Route pages (15+ pages)
-│   │   ├── hooks/               # Custom React hooks (12+ hooks)
-│   │   ├── contexts/            # React contexts (Auth, Agency, License)
+│   │   ├── pages/               # Route pages (17+ pages)
+│   │   ├── hooks/               # Custom React hooks (14+ hooks)
+│   │   ├── contexts/            # React contexts (Auth, Agency, License, Subscription)
+│   │   ├── config/              # Plan definitions (subscriptionPlans.ts)
 │   │   ├── i18n/                # Internationalization (EN/FR)
 │   │   ├── integrations/        # Supabase client & types
 │   │   └── lib/                 # Utility functions
 │   ├── supabase/
 │   │   └── functions/           # Edge Functions
-│   │       ├── create-user/     # User provisioning
+│   │       ├── create-user/     # User provisioning + subscription creation
 │   │       ├── manage-user/     # User management
 │   │       ├── seed-admin/      # Initial admin setup
-│   │       └── verify-license/  # License validation
+│   │       ├── verify-license/  # License validation
+│   │       ├── create-checkout/ # Stripe checkout sessions
+│   │       ├── check-subscription/ # Subscription verification
+│   │       ├── customer-portal/ # Stripe billing portal
+│   │       ├── onboard-checkout/ # Self-service onboarding checkout
+│   │       └── stripe-webhook/  # Stripe event handling
 │   ├── public/                  # Static assets
 │   └── package.json
 ├── 📁 docs/                     # Complete documentation
@@ -234,13 +251,15 @@ npm run dev
 
 ## 🔐 Security Features
 
-- **Row Level Security (RLS)** on all 13 tables
+- **Row Level Security (RLS)** on all 15 tables
 - **Security Definer Functions** for role checks (no recursive RLS)
 - **Database-enforced permissions** — not just UI-level checks
 - **JWT-based authentication** via Supabase Auth
 - **No sensitive credentials** in client-side code
 - **Edge Functions** with service role for privileged operations
 - **License system** for domain-based activation
+- **Stripe webhook signature verification** for payment security
+- **Subscription Guard** preventing unauthorized feature access
 
 ---
 

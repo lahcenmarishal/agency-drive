@@ -11,16 +11,22 @@ import { useToast } from "@/hooks/use-toast";
 import { PLANS } from "@/config/subscriptionPlans";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { Navigate } from "react-router-dom";
 
 export default function Billing() {
   const { t } = useTranslation();
   const { subscription, isLoading, isActive, planName, refreshSubscription } = useSubscription();
-  const { agencyId, isAdmin } = useAuth();
+  const { agencyId, isAdmin, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const [yearlyBilling, setYearlyBilling] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Super admin should not see billing page - redirect to dashboard
+  if (isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubscribe = async (planKey: string) => {
     if (!agencyId) {

@@ -7,10 +7,11 @@
 3. [Backend Architecture](#backend-architecture)
 4. [Database Structure](#database-structure)
 5. [Role Management Logic](#role-management-logic)
-6. [State Management](#state-management)
-7. [Security Considerations](#security-considerations)
-8. [Server Requirements](#server-requirements)
-9. [Browser Compatibility](#browser-compatibility)
+6. [Subscription System](#subscription-system)
+7. [State Management](#state-management)
+8. [Security Considerations](#security-considerations)
+9. [Server Requirements](#server-requirements)
+10. [Browser Compatibility](#browser-compatibility)
 
 ---
 
@@ -26,6 +27,7 @@
 | **Backend** | Supabase | Latest |
 | **Database** | PostgreSQL | 15+ (via Supabase) |
 | **Authentication** | Supabase Auth | Built-in |
+| **Payments** | Stripe | Latest |
 | **Serverless Functions** | Supabase Edge Functions | Deno runtime |
 | **State Management** | TanStack Query v5 | 5.x |
 | **Routing** | React Router | 6.x |
@@ -56,7 +58,8 @@ src/
 │   ├── employees/        # EmployeeForm
 │   ├── drivers/          # DriverForm
 │   ├── agencies/         # AgencyForm
-│   ├── users/            # CreateAdminForm, EditUserForm
+│   ├── users/            # CreateAdminForm (with plan selection), EditUserForm
+│   ├── billing/          # AdminBillingPanel (subscription management)
 │   └── landing/          # DemoRequestForm
 ├── pages/                # Route-level components
 │   ├── Dashboard.tsx     # Main dashboard
@@ -70,10 +73,12 @@ src/
 │   ├── Agences.tsx       # Agency listing
 │   ├── AgenceDetails.tsx # Single agency view
 │   ├── Parametres.tsx    # Settings
-│   ├── UsersManagement   # User/role management
+│   ├── UsersManagement   # User/role management + AdminBillingPanel
+│   ├── Billing.tsx       # Subscription plans & management (agency admins only)
+│   ├── Onboarding.tsx    # Self-service registration + checkout
 │   ├── Auth.tsx          # Login page
 │   ├── AdminAuth.tsx     # Admin login
-│   ├── Landing.tsx       # Public landing page
+│   ├── Landing.tsx       # Public landing page with pricing
 │   ├── Activation.tsx    # License activation
 │   └── NotFound.tsx      # 404 page
 ├── hooks/                # Custom React hooks
@@ -85,14 +90,18 @@ src/
 │   ├── useEmployees.ts   # Employee CRUD + account creation
 │   ├── useDrivers.ts     # Driver CRUD operations
 │   ├── useAgencies.ts    # Agency CRUD operations
-│   ├── useUsers.ts       # User management
+│   ├── useUsers.ts       # User management (with plan_key support)
 │   ├── useDashboardStats # Dashboard metrics
+│   ├── usePlanLimits.ts  # Feature gating based on subscription
 │   ├── useAgencyFilter   # Agency-based filtering
 │   └── useAccessibleAgencies # Multi-agency access
 ├── contexts/             # React Context providers
 │   ├── AuthContext.tsx    # Authentication state & role management
 │   ├── AgencyFilterContext # Agency selection & filtering
+│   ├── SubscriptionContext # Subscription state & auto-refresh
 │   └── LicenseContext    # License validation
+├── config/
+│   └── subscriptionPlans.ts # Plan definitions (Basic, Pro, Enterprise)
 ├── i18n/                 # Internationalization
 │   ├── index.ts          # i18n configuration
 │   └── locales/
@@ -106,120 +115,112 @@ src/
     └── utils.ts          # Utility functions (cn, etc.)
 ```
 
-### Component Architecture
-
-The application follows a **composition-based architecture**:
-
-1. **Pages** → Top-level route components. Handle layout and data orchestration.
-2. **Feature Components** → Domain-specific components (e.g., `VehicleForm`, `ClientDetailsDialog`).
-3. **UI Components** → Reusable, headless-style components from shadcn/ui.
-4. **Hooks** → All data fetching and mutations are encapsulated in custom hooks using TanStack Query.
-5. **Contexts** → Global state (Auth, Agency filter, License) is managed via React Context.
-
 ### Routing
 
 ```
-/                    → Landing page (public)
+/                    → Landing page with pricing (public)
 /auth                → User login
 /admin-auth          → Admin login
+/onboarding          → Self-service registration + Stripe checkout (public)
 /activation          → License activation
-/dashboard           → Main dashboard (protected)
-/vehicules           → Vehicle management (protected)
-/clients             → Client management (protected)
-/locations           → Rental management (protected)
-/reservations        → Reservation management (protected)
-/comptabilite        → Accounting (protected, admin only)
-/employes            → Employee management (protected)
-/chauffeurs          → Driver management (protected)
-/agences             → Agency management (protected, admin only)
-/agences/:id         → Agency details (protected, admin only)
+/dashboard           → Main dashboard (protected + subscription guard)
+/vehicules           → Vehicle management (protected + subscription guard)
+/clients             → Client management (protected + subscription guard)
+/locations           → Rental management (protected + subscription guard)
+/reservations        → Reservation management (protected + subscription guard)
+/comptabilite        → Accounting (protected, admin only + subscription guard)
+/employes            → Employee management (protected + subscription guard)
+/chauffeurs          → Driver management (protected + subscription guard)
+/agences             → Agency management (protected, admin only + subscription guard)
+/agences/:id         → Agency details (protected, admin only + subscription guard)
 /parametres          → Settings (protected, admin only)
-/utilisateurs        → User management (protected, super admin only)
+/utilisateurs        → User + subscription management (protected, super admin only)
+/billing             → Subscription plans (protected, agency admins only — hidden for super admin)
 ```
 
 ---
 
 ## Backend Architecture
 
-### Supabase Services Used
-
-| Service | Purpose |
-|---------|---------|
-| **PostgreSQL** | Relational database with RLS |
-| **Auth** | Email/password authentication |
-| **Edge Functions** | Serverless functions (Deno) |
-| **Realtime** | (Available, not currently used) |
-| **Storage** | (Available for vehicle images) |
-
 ### Edge Functions
 
 | Function | Purpose | JWT Required |
 |----------|---------|:---:|
 | `seed-admin` | Create the first Super Admin account | ❌ |
-| `create-user` | Provision new user accounts (admin/agent) | ❌ |
+| `create-user` | Provision new user accounts + optional subscription | ❌ |
 | `manage-user` | Update/deactivate user accounts | ❌ |
 | `verify-license` | Validate license keys against domains | ❌ |
-
-> **Note:** Edge Functions use `service_role` key internally for privileged database operations. They validate permissions by checking the caller's role in the database.
+| `create-checkout` | Create Stripe checkout for existing users | ❌ |
+| `onboard-checkout` | Create Stripe checkout for new registrations | ❌ |
+| `check-subscription` | Verify subscription status from DB | ❌ |
+| `customer-portal` | Open Stripe billing portal | ❌ |
+| `stripe-webhook` | Handle Stripe events (payment, cancellation) | ❌ |
 
 ---
 
 ## Database Structure
 
-### Entity Relationship Overview
-
-```
-auth.users (Supabase managed)
-    │
-    ├── profiles (1:1) ──── agencies (N:1)
-    ├── user_roles (1:N)
-    └── admin_agencies (N:M) ──── agencies
-    
-agencies
-    ├── vehicles (1:N)
-    ├── clients (1:N)
-    ├── drivers (1:N)
-    ├── employees (1:N)
-    ├── reservations (1:N)
-    │       └── clients, vehicles
-    ├── rentals (1:N)
-    │       └── clients, vehicles, reservations
-    ├── transactions (1:N)
-    │       └── rentals
-    └── blacklist_notes (1:N)
-
-licenses (standalone)
-```
-
 ### Tables Summary
 
-| Table | Rows (typical) | RLS | Description |
-|-------|:-:|:-:|-------------|
-| `agencies` | 1–100 | ✅ | Rental agency locations |
-| `profiles` | 1–500 | ✅ | User profile data |
-| `user_roles` | 1–500 | ✅ | Role assignments (admin/agent/super_admin) |
-| `admin_agencies` | 1–200 | ✅ | Admin-to-agency mapping |
-| `vehicles` | 10–1000 | ✅ | Vehicle fleet |
-| `clients` | 50–10000 | ✅ | Customer database |
-| `drivers` | 5–200 | ✅ | Driver registry |
-| `employees` | 5–500 | ✅ | Staff records |
-| `reservations` | 50–5000 | ✅ | Booking records |
-| `rentals` | 50–10000 | ✅ | Rental contracts |
-| `transactions` | 100–50000 | ✅ | Financial transactions |
-| `blacklist_notes` | 0–100 | ✅ | Operational notes |
-| `licenses` | 1–100 | ✅ | License keys |
+| Table | RLS | Description |
+|-------|:-:|-------------|
+| `agencies` | ✅ | Rental agency locations |
+| `profiles` | ✅ | User profile data |
+| `user_roles` | ✅ | Role assignments (admin/agent/super_admin) |
+| `admin_agencies` | ✅ | Admin-to-agency mapping |
+| `vehicles` | ✅ | Vehicle fleet |
+| `clients` | ✅ | Customer database |
+| `drivers` | ✅ | Driver registry |
+| `employees` | ✅ | Staff records |
+| `reservations` | ✅ | Booking records |
+| `rentals` | ✅ | Rental contracts |
+| `transactions` | ✅ | Financial transactions |
+| `blacklist_notes` | ✅ | Operational notes |
+| `licenses` | ✅ | License keys |
+| `tenant_subscriptions` | ✅ | Subscription plans per agency (Stripe) |
+| `pending_registrations` | ✅ | Temporary onboarding data (24h expiry) |
 
-### Database Functions
+---
 
-| Function | Type | Purpose |
-|----------|------|---------|
-| `handle_new_user()` | Trigger | Auto-creates profile + agent role on signup |
-| `is_super_admin(uuid)` | Security Definer | Checks if user is super admin |
-| `has_role(uuid, role)` | Security Definer | Checks if user has a specific role |
-| `can_access_agency(uuid, uuid)` | Security Definer | Checks agency access permission |
-| `admin_has_agency_access(uuid, uuid)` | Security Definer | Checks admin agency assignment |
-| `get_user_agency_id(uuid)` | Security Definer | Returns user's primary agency |
-| `update_updated_at_column()` | Trigger | Auto-updates `updated_at` timestamps |
+## Subscription System
+
+### Architecture
+
+```
+Landing Page → Select Plan → Onboarding Form → Stripe Checkout → Webhook → Auto-provision
+                                                                     ↓
+                                                            Agency + Admin + Subscription created
+```
+
+### Super Admin Flow
+```
+Super Admin → Users Panel → Create Admin → Select Plan + Interval → User + Subscription created
+Super Admin → AdminBillingPanel → Edit/Extend/Cancel any subscription manually
+```
+
+### Plan Definitions
+
+| Plan | Vehicles | Users | Agencies | Monthly | Yearly |
+|------|:--------:|:-----:|:--------:|:-------:|:------:|
+| Basic | 10 | 3 | 1 | $29 | $290 |
+| Pro | 50 | 10 | 3 | $59 | $590 |
+| Enterprise | ∞ | ∞ | ∞ | $99 | $990 |
+
+### Subscription Guard
+
+The `SubscriptionGuard` component wraps protected routes:
+- **Super Admins**: Always bypass (no subscription needed)
+- **Active subscriptions**: Full access
+- **Expired/cancelled**: Redirected to `/billing`
+- **Allowed bypass**: `/billing`, `/parametres`, `/auth`
+
+### Key Files
+- `src/config/subscriptionPlans.ts` — Plan definitions with Stripe price IDs
+- `src/contexts/SubscriptionContext.tsx` — Subscription state + auto-refresh (60s)
+- `src/components/SubscriptionGuard.tsx` — Route access control
+- `src/components/billing/AdminBillingPanel.tsx` — Super Admin subscription management
+- `src/pages/Billing.tsx` — Agency admin billing page
+- `src/pages/Onboarding.tsx` — Self-service registration
 
 ---
 
@@ -230,77 +231,30 @@ licenses (standalone)
 ```
 Super Admin (super_admin)
     │
-    ├── Full system access
+    ├── Full system access (NO subscription required)
     ├── Manage all agencies
-    ├── Create/manage admins
+    ├── Create/manage admins with subscription assignment
+    ├── View/edit/extend all tenant subscriptions
     ├── View all data across agencies
     └── System settings
     
 Agency Admin (admin)
     │
+    ├── Requires active subscription
     ├── Manage assigned agencies only
     ├── Create agents within their agencies
     ├── View agency-specific data
     ├── Accounting access
+    ├── Billing & subscription management (self-service)
     └── Employee management
     
 Employee / Agent (agent)
     │
-    ├── Access own agency only
+    ├── Access own agency only (inherits subscription status)
     ├── Manage clients, vehicles, rentals
     ├── No accounting access
     ├── No settings access
     └── No user management
-```
-
-### How Roles Are Enforced
-
-1. **Database Level (RLS)** — Every table query is filtered by `can_access_agency()` which checks the user's role and agency assignments.
-2. **API Level (Edge Functions)** — Privileged operations (user creation, management) verify the caller's role before executing.
-3. **UI Level** — Components conditionally render based on `useAuth()` context (`isAdmin`, `isSuperAdmin`).
-
-### Role Assignment Flow
-
-1. New user signs up → `handle_new_user()` trigger → assigned `agent` role by default
-2. Super Admin creates admin → Edge Function → assigns `admin` role + `admin_agencies` entries
-3. Admin creates employee with account → Edge Function → assigns `agent` role + `profiles.agency_id`
-
----
-
-## State Management
-
-### TanStack Query (Server State)
-
-All data fetching uses TanStack Query with custom hooks:
-
-```typescript
-// Example: useVehicles hook
-const { data: vehicles, isLoading } = useQuery({
-  queryKey: ['vehicles', agencyFilter],
-  queryFn: () => fetchVehicles(agencyFilter),
-});
-
-const createVehicle = useMutation({
-  mutationFn: (data) => supabase.from('vehicles').insert(data),
-  onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vehicles'] }),
-});
-```
-
-### React Context (Client State)
-
-| Context | Purpose |
-|---------|---------|
-| `AuthContext` | Current user, role, agency, session |
-| `AgencyFilterContext` | Selected agency for multi-agency admins |
-| `LicenseContext` | License validation status |
-
-### Data Flow
-
-```
-User Action → Hook (useMutation) → Supabase API → PostgreSQL (RLS filtered)
-                                                        │
-                                                        ↓
-UI Update ← TanStack Query (cache invalidation) ← Response
 ```
 
 ---
@@ -312,12 +266,13 @@ UI Update ← TanStack Query (cache invalidation) ← Response
 - JWT tokens with automatic refresh
 - Session persistence in localStorage
 - Protected routes with `ProtectedRoute` component
+- Subscription-based access control with `SubscriptionGuard`
 
-### Authorization
-- **Row Level Security (RLS)** on all 13 tables
-- **Security Definer Functions** prevent recursive RLS issues
-- Role checks at database level — not bypassable from client
-- Edge Functions use `service_role` for privileged operations
+### Payment Security
+- Stripe webhook signature verification (`STRIPE_WEBHOOK_SECRET`)
+- No sensitive Stripe keys in client-side code
+- Password hashed before storage in `pending_registrations`
+- Pending registrations expire after 24 hours
 
 ### Data Isolation
 - Multi-tenant data isolation via `agency_id` on all business tables
@@ -325,31 +280,6 @@ UI Update ← TanStack Query (cache invalidation) ← Response
 - Super Admins can access all agencies
 - Admins access only assigned agencies
 - Agents access only their own agency
-
-### Best Practices Implemented
-- No sensitive keys in client-side code
-- Environment variables for configuration
-- HTTPS enforced (via Supabase)
-- Input validation with Zod schemas
-- SQL injection prevention (parameterized queries via Supabase SDK)
-
----
-
-## Server Requirements
-
-### Development
-- Node.js 18+
-- npm 8+ or yarn 1.22+ or bun 1.x
-- Modern browser with DevTools
-
-### Production (Static Hosting)
-- Any static hosting service (Netlify, Vercel, Cloudflare Pages)
-- No server-side runtime required (Supabase handles backend)
-- SSL certificate (provided by hosting platforms)
-
-### Supabase Project
-- Free tier sufficient for development and small deployments
-- Pro plan recommended for production (better performance, backups)
 
 ---
 
@@ -364,29 +294,3 @@ UI Update ← TanStack Query (cache invalidation) ← Response
 | Chrome (Android) | Latest | ✅ Fully supported |
 | Safari (iOS) | 14+ | ✅ Fully supported |
 | Internet Explorer | Any | ❌ Not supported |
-
-### Required Browser Features
-- ES2020+ JavaScript
-- CSS Grid & Flexbox
-- CSS Custom Properties
-- Fetch API
-- LocalStorage
-- ResizeObserver
-
----
-
-## Performance
-
-### Build Output
-- **Bundle size:** ~350KB gzipped (typical)
-- **First Contentful Paint:** < 1.5s
-- **Time to Interactive:** < 3s
-- **Lighthouse Score:** 90+ (Performance)
-
-### Optimization Techniques
-- Code splitting via React.lazy (route-level)
-- TanStack Query caching (reduces API calls)
-- Vite tree-shaking (removes unused code)
-- Tailwind CSS purging (minimal CSS output)
-- Image lazy loading
-- Debounced search inputs

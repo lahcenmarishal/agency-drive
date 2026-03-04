@@ -6,6 +6,53 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.1.0] — 2026-03-04
+
+### ✨ Added
+- **SaaS Subscription System** — Full Stripe integration with 3 plans (Basic, Pro, Enterprise)
+  - Monthly and yearly billing intervals
+  - Feature-gating based on subscription limits (vehicles, users, agencies)
+  - Automated subscription lifecycle via Stripe webhooks
+- **Self-Service Onboarding** — New customers can register from the landing page
+  - Multi-step form: plan selection → agency details → Stripe payment
+  - Automatic account + agency creation after successful payment
+  - `pending_registrations` table for secure temporary data storage
+- **Subscription Guard** — Restricts access for expired/cancelled subscriptions
+  - Automatic redirect to billing page for inactive subscriptions
+  - Allowed bypass for critical pages (Auth, Settings, Billing)
+- **Super Admin Subscription Management**
+  - Manual subscription creation when adding agency admins (plan, interval, limits)
+  - Full edit/modify panel: change plan, extend dates, adjust limits, toggle status
+  - Search and filter across all tenant subscriptions
+- **Super Admin Isolation** — Super admins have no subscription of their own
+  - Billing page hidden from super admin navigation
+  - Super admin bypasses all subscription checks
+  - Dedicated subscription management via Users panel
+- **Billing Page** — Agency admins can view their plan, subscribe, upgrade, and manage billing via Stripe Customer Portal
+- **Edge Functions**
+  - `onboard-checkout` — Creates Stripe Checkout for unauthenticated onboarding
+  - `create-checkout` — Creates Stripe Checkout for existing users
+  - `check-subscription` — Verifies subscription status from `tenant_subscriptions`
+  - `customer-portal` — Opens Stripe Customer Portal for self-service management
+  - `stripe-webhook` — Handles `checkout.session.completed` for automatic provisioning
+
+### 🔧 Changed
+- `create-user` Edge Function now accepts `plan_key` and `billing_interval` to auto-create subscriptions
+- Sidebar navigation hides Billing link for Super Admins
+- `SubscriptionContext` no longer assigns fake subscriptions to Super Admins
+- Updated all documentation to reflect SaaS features
+
+### 🗄️ Database
+- Added `tenant_subscriptions` table (plan, status, limits, Stripe IDs, billing info)
+- Added `pending_registrations` table (temporary onboarding data with 24h expiry)
+
+### 🔒 Security
+- RLS on `tenant_subscriptions`: Super admins manage all, admins/agents read their own
+- RLS on `pending_registrations`: Service role only (no client access)
+- Stripe webhook signature verification via `STRIPE_WEBHOOK_SECRET`
+
+---
+
 ## [1.0.0] — 2025-06-XX
 
 ### ✨ Added
@@ -45,4 +92,3 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Advanced analytics dashboard
 - Mobile application (React Native)
 - Multi-language support (EN, FR, AR)
-- Online payment integration

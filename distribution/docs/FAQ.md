@@ -26,6 +26,28 @@
 
 ---
 
+## Subscriptions & Billing
+
+### Q: Do I need a Stripe account?
+**A:** Yes. Stripe handles payment processing for subscription plans. You need to create products, prices, and configure a webhook.
+
+### Q: Can I change the subscription plans?
+**A:** Yes. Update `src/config/subscriptionPlans.ts` with your new Stripe product/price IDs and adjust limits/pricing.
+
+### Q: Does the Super Admin need a subscription?
+**A:** No. The Super Admin bypasses all subscription checks and manages agency subscriptions from the Users panel.
+
+### Q: What happens when a subscription expires?
+**A:** Agency admins and their agents are redirected to the Billing page. They can only access Billing, Settings, and Auth pages until they renew.
+
+### Q: Can the Super Admin manually create subscriptions?
+**A:** Yes. When creating a new agency admin from the Users panel, the Super Admin selects the plan and billing interval. Subscriptions can also be edited, extended, or cancelled from the AdminBillingPanel.
+
+### Q: How does self-service onboarding work?
+**A:** New customers select a plan on the landing page, fill out a registration form (personal + agency info), complete Stripe Checkout, and their account + agency + subscription are created automatically via the webhook.
+
+---
+
 ## License
 
 ### Q: The app asks for a license on localhost
@@ -48,7 +70,7 @@
 3. The build completed without errors
 
 ### Q: Edge Functions are not working
-**A:** Verify they are deployed via `supabase functions list`. Redeploy if necessary with `supabase functions deploy`.
+**A:** Verify they are deployed via `supabase functions list`. Redeploy if necessary with `supabase functions deploy`. Check that all secrets are set (including `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`).
 
 ### Q: Can I host on a subdomain?
 **A:** Yes, the license is linked to the full hostname (e.g., `app.mysite.com`).
@@ -58,13 +80,13 @@
 ## Features
 
 ### Q: How many agencies can I create?
-**A:** Unlimited. The super_admin can create as many agencies as needed.
+**A:** Depends on the subscription plan. Basic: 1, Pro: 3, Enterprise: unlimited. The Super Admin can override limits manually.
 
 ### Q: Does the system support multiple currencies?
-**A:** By default, the currency is USD (US Dollar). To change it, modify the references in the accounting components.
+**A:** By default, the currency is USD (US Dollar). To change it, modify the references in the accounting components and update Stripe prices.
 
 ### Q: Can I add new features?
-**A:** Yes! The code is fully modifiable. The stack (React + TypeScript + Tailwind + Supabase) is modern and well-documented.
+**A:** Yes! The code is fully modifiable. The stack (React + TypeScript + Tailwind + Supabase + Stripe) is modern and well-documented.
 
 ---
 

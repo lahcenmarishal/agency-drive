@@ -10,9 +10,17 @@ interface CreateUserRequest {
   password: string;
   full_name: string;
   role: "admin" | "agent";
-  agency_id?: string; // For backward compatibility (agents)
-  agency_ids?: string[]; // For admins with multiple agencies
+  agency_id?: string;
+  agency_ids?: string[];
+  plan_key?: string;
+  billing_interval?: string;
 }
+
+const PLAN_LIMITS: Record<string, { maxVehicles: number; maxUsers: number; maxAgencies: number; monthlyPrice: number; yearlyPrice: number }> = {
+  basic: { maxVehicles: 10, maxUsers: 3, maxAgencies: 1, monthlyPrice: 29, yearlyPrice: 290 },
+  pro: { maxVehicles: 50, maxUsers: 10, maxAgencies: 3, monthlyPrice: 59, yearlyPrice: 590 },
+  enterprise: { maxVehicles: -1, maxUsers: -1, maxAgencies: -1, monthlyPrice: 99, yearlyPrice: 990 },
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -64,7 +72,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { email, password, full_name, role, agency_id, agency_ids }: CreateUserRequest = await req.json();
+    const { email, password, full_name, role, agency_id, agency_ids, plan_key, billing_interval }: CreateUserRequest = await req.json();
 
     const normalizedEmail = (email || "").trim().toLowerCase();
     const normalizedPassword = (password || "").trim();
@@ -237,6 +245,35 @@ Deno.serve(async (req) => {
 
       if (adminAgenciesError) {
         console.error("Error inserting admin_agencies:", adminAgenciesError);
+      }
+    }
+
+    // For admins created by super admin, create subscription if plan specified
+    if (role === "admin" && plan_key && requesterRole.role === "super_admin") {
+      const planLimits = PLAN_LIMITS[plan_key] || PLAN_LIMITS.basic;
+      const interval = billing_interval || "monthly";
+      const amount = interval === "yearly" ? planLimits.yearlyPrice : planLimits.monthlyPrice;
+      const periodEnd = new Date();
+      periodEnd.setMonth(periodEnd.getMonth() + (interval === "yearly" ? 12 : 1));
+
+      const { error: subError } = await supabaseAdmin
+        .from("tenant_subscriptions")
+        .upsert({
+          agency_id: primaryAgencyId,
+          plan_name: plan_key,
+          status: "active",
+          billing_interval: interval,
+          max_vehicles: planLimits.maxVehicles,
+          max_users: planLimits.maxUsers,
+          max_agencies: planLimits.maxAgencies,
+          amount,
+          currency: "usd",
+          current_period_start: new Date().toISOString(),
+          current_period_end: periodEnd.toISOString(),
+        }, { onConflict: "agency_id" });
+
+      if (subError) {
+        console.error("Error creating subscription:", subError);
       }
     }
 
