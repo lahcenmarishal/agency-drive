@@ -184,6 +184,7 @@ export default function Billing() {
         {Object.entries(PLANS).map(([key, plan]) => {
           const Icon = planIcons[key] || Zap;
           const isCurrentPlan = planName === key;
+          const isExpiredCurrentPlan = isCurrentPlan && !isActive;
           const price = yearlyBilling ? plan.yearlyPrice : plan.monthlyPrice;
           const interval = yearlyBilling ? "/year" : "/month";
 
@@ -192,16 +193,21 @@ export default function Billing() {
               key={key}
               className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
                 key === "pro" ? "border-primary/50 shadow-[var(--shadow-gold)]" : ""
-              } ${isCurrentPlan ? "ring-2 ring-primary" : ""}`}
+              } ${isCurrentPlan && isActive ? "ring-2 ring-primary" : ""} ${isExpiredCurrentPlan ? "ring-2 ring-destructive" : ""}`}
             >
               {key === "pro" && (
                 <div className="absolute top-0 right-0 px-3 py-1 premium-gradient text-xs font-bold text-primary-foreground rounded-bl-lg">
                   POPULAR
                 </div>
               )}
-              {isCurrentPlan && (
+              {isCurrentPlan && isActive && (
                 <div className="absolute top-0 left-0 px-3 py-1 bg-primary text-xs font-bold text-primary-foreground rounded-br-lg">
                   YOUR PLAN
+                </div>
+              )}
+              {isExpiredCurrentPlan && (
+                <div className="absolute top-0 left-0 px-3 py-1 bg-destructive text-xs font-bold text-destructive-foreground rounded-br-lg">
+                  EXPIRED
                 </div>
               )}
               <CardHeader className="pb-4">
@@ -227,10 +233,19 @@ export default function Billing() {
                 </ul>
               </CardContent>
               <CardFooter>
-                {isCurrentPlan ? (
+                {isCurrentPlan && isActive ? (
                   <Button className="w-full" variant="outline" onClick={handleManageSubscription} disabled={loadingPortal}>
                     {loadingPortal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                     Manage Plan
+                  </Button>
+                ) : isExpiredCurrentPlan ? (
+                  <Button
+                    className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                    onClick={() => handleSubscribe(key)}
+                    disabled={loadingPlan === key}
+                  >
+                    {loadingPlan === key ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                    Renew {plan.name}
                   </Button>
                 ) : (
                   <Button
@@ -240,7 +255,7 @@ export default function Billing() {
                     disabled={loadingPlan === key}
                   >
                     {loadingPlan === key ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    {subscription?.subscribed ? "Switch to " : "Subscribe to "}{plan.name}
+                    {subscription?.subscribed && isActive ? "Switch to " : "Subscribe to "}{plan.name}
                   </Button>
                 )}
               </CardFooter>
