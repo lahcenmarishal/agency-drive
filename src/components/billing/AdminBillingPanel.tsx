@@ -302,6 +302,16 @@ export function AdminBillingPanel() {
                         >
                           <Pencil className="h-4 w-4 text-primary" />
                         </Button>
+                        {(sub.status === "expired" || sub.status === "cancelled") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRenew(sub)}
+                            title="Renouveler"
+                          >
+                            <RotateCcw className="h-4 w-4 text-chart-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -311,7 +321,7 @@ export function AdminBillingPanel() {
                           {sub.status === "active" ? (
                             <PowerOff className="h-4 w-4 text-destructive" />
                           ) : (
-                            <Power className="h-4 w-4 text-green-500" />
+                            <Power className="h-4 w-4 text-chart-2" />
                           )}
                         </Button>
                       </div>
