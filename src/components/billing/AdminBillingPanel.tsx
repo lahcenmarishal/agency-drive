@@ -95,6 +95,36 @@ export function AdminBillingPanel() {
     }
   };
 
+  const handleRenew = async (sub: TenantSub) => {
+    const plan = PLANS[sub.plan_name];
+    const now = new Date();
+    const periodEnd = new Date();
+    if (sub.billing_interval === "yearly") {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    const { error } = await supabase
+      .from("tenant_subscriptions")
+      .update({
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        max_vehicles: plan?.maxVehicles ?? sub.max_vehicles,
+        max_users: plan?.maxUsers ?? sub.max_users,
+        max_agencies: plan?.maxAgencies ?? sub.max_agencies,
+      })
+      .eq("id", sub.id);
+
+    if (error) {
+      toast({ title: "Erreur", description: "Impossible de renouveler l'abonnement", variant: "destructive" });
+    } else {
+      toast({ title: "Renouvelé", description: `Abonnement renouvelé pour ${(sub.agencies as any)?.name || sub.agency_id}` });
+      fetchSubscriptions();
+    }
+  };
+
   const openEdit = (sub: TenantSub) => {
     setEditingSub(sub);
     setEditForm({
