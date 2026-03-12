@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useEffect } from "react";
-import { Loader2, Building2, CreditCard, Search, RefreshCw, Power, PowerOff, Pencil, Save, X } from "lucide-react";
+import { Loader2, Building2, CreditCard, Search, RefreshCw, Power, PowerOff, Pencil, Save, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -91,6 +91,36 @@ export function AdminBillingPanel() {
       toast({ title: "Error", description: "Failed to update subscription", variant: "destructive" });
     } else {
       toast({ title: "Updated", description: `Subscription ${newStatus === "active" ? "activated" : "deactivated"} for ${(sub.agencies as any)?.name || sub.agency_id}` });
+      fetchSubscriptions();
+    }
+  };
+
+  const handleRenew = async (sub: TenantSub) => {
+    const plan = PLANS[sub.plan_name];
+    const now = new Date();
+    const periodEnd = new Date();
+    if (sub.billing_interval === "yearly") {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    const { error } = await supabase
+      .from("tenant_subscriptions")
+      .update({
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        max_vehicles: plan?.maxVehicles ?? sub.max_vehicles,
+        max_users: plan?.maxUsers ?? sub.max_users,
+        max_agencies: plan?.maxAgencies ?? sub.max_agencies,
+      })
+      .eq("id", sub.id);
+
+    if (error) {
+      toast({ title: "Erreur", description: "Impossible de renouveler l'abonnement", variant: "destructive" });
+    } else {
+      toast({ title: "Renouvelé", description: `Abonnement renouvelé pour ${(sub.agencies as any)?.name || sub.agency_id}` });
       fetchSubscriptions();
     }
   };
@@ -272,6 +302,16 @@ export function AdminBillingPanel() {
                         >
                           <Pencil className="h-4 w-4 text-primary" />
                         </Button>
+                        {(sub.status === "expired" || sub.status === "cancelled") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRenew(sub)}
+                            title="Renouveler"
+                          >
+                            <RotateCcw className="h-4 w-4 text-chart-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -281,7 +321,7 @@ export function AdminBillingPanel() {
                           {sub.status === "active" ? (
                             <PowerOff className="h-4 w-4 text-destructive" />
                           ) : (
-                            <Power className="h-4 w-4 text-green-500" />
+                            <Power className="h-4 w-4 text-chart-2" />
                           )}
                         </Button>
                       </div>
