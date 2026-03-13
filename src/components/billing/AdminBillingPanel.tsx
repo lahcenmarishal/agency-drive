@@ -302,7 +302,7 @@ export function AdminBillingPanel() {
                         >
                           <Pencil className="h-4 w-4 text-primary" />
                         </Button>
-                        {(sub.status === "expired" || sub.status === "cancelled") && (
+                        {sub.status !== "active" && sub.status !== "trialing" && (
                           <Button
                             variant="ghost"
                             size="sm"
