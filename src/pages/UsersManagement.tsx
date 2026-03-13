@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Users, Plus, Search, Mail, Building2, Shield, CheckCircle, XCircle, Pencil, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Users, Plus, Search, Mail, Building2, Shield, CheckCircle, XCircle, Pencil, Trash2, RotateCcw, Loader2 } from "lucide-react";
 import { AdminBillingPanel } from "@/components/billing/AdminBillingPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -27,6 +28,21 @@ import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, UserWithProfile 
 import { useAgencies } from "@/hooks/useAgencies";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { PLANS } from "@/config/subscriptionPlans";
+import { toast } from "sonner";
+
+interface SubscriptionMap {
+  [agencyId: string]: {
+    id: string;
+    status: string;
+    plan_name: string;
+    billing_interval: string;
+    max_vehicles: number;
+    max_users: number;
+    max_agencies: number;
+  };
+}
 
 export default function UsersManagement() {
   const { t } = useTranslation();
@@ -34,6 +50,8 @@ export default function UsersManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithProfile | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserWithProfile | null>(null);
+  const [subscriptionMap, setSubscriptionMap] = useState<SubscriptionMap>({});
+  const [renewingUserId, setRenewingUserId] = useState<string | null>(null);
 
   const { isSuperAdmin, user: currentUser } = useAuth();
   const { data: agencies } = useAgencies();
@@ -41,6 +59,68 @@ export default function UsersManagement() {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
+
+  // Fetch subscriptions for all agencies
+  const fetchSubscriptions = useCallback(async () => {
+    const { data } = await supabase
+      .from("tenant_subscriptions")
+      .select("id, agency_id, status, plan_name, billing_interval, max_vehicles, max_users, max_agencies");
+    if (data) {
+      const map: SubscriptionMap = {};
+      data.forEach((sub) => {
+        map[sub.agency_id] = sub;
+      });
+      setSubscriptionMap(map);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isSuperAdmin) fetchSubscriptions();
+  }, [isSuperAdmin, fetchSubscriptions]);
+
+  const getSubscriptionForUser = (user: UserWithProfile) => {
+    // Check admin_agencies first, then profile agency_id
+    const agencyIds = user.agency_ids || (user.agency_id ? [user.agency_id] : []);
+    for (const aid of agencyIds) {
+      if (subscriptionMap[aid]) return subscriptionMap[aid];
+    }
+    return null;
+  };
+
+  const handleRenewSubscription = async (user: UserWithProfile) => {
+    const sub = getSubscriptionForUser(user);
+    if (!sub) return;
+
+    setRenewingUserId(user.user_id);
+    const plan = PLANS[sub.plan_name];
+    const now = new Date();
+    const periodEnd = new Date();
+    if (sub.billing_interval === "yearly") {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    const { error } = await supabase
+      .from("tenant_subscriptions")
+      .update({
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        max_vehicles: plan?.maxVehicles ?? sub.max_vehicles,
+        max_users: plan?.maxUsers ?? sub.max_users,
+        max_agencies: plan?.maxAgencies ?? sub.max_agencies,
+      })
+      .eq("id", sub.id);
+
+    if (error) {
+      toast.error("Impossible de renouveler l'abonnement");
+    } else {
+      toast.success(`Abonnement renouvelé pour ${user.full_name}`);
+      fetchSubscriptions();
+    }
+    setRenewingUserId(null);
+  };
 
   const filteredUsers = users?.filter((user) =>
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,52 +185,86 @@ export default function UsersManagement() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers?.map((user) => (
-            <div key={user.id} className="glass-card p-6 group relative">
-              {canModifyUser(user) && (
-                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingUser(user)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeletingUser(user)}><Trash2 className="h-4 w-4" /></Button>
-                </div>
-              )}
+          {filteredUsers?.map((user) => {
+            const sub = getSubscriptionForUser(user);
+            const canRenew = sub && sub.status !== "active" && sub.status !== "trialing";
+            const isRenewing = renewingUserId === user.user_id;
 
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-foreground font-semibold text-lg">
-                  {user.full_name?.split(" ").map((n) => n[0]).join("") || "?"}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
-                    user.role === "super_admin" ? "bg-destructive/15 text-destructive" :
-                    user.role === "admin" ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"
-                  )}>
-                    <Shield className="h-3 w-3" />
-                    {t(`users.roles.${user.role || "agent"}`)}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-semibold font-display">{user.full_name || t("dashboard.noName")}</h3>
-                {user.is_active ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-destructive" />}
-              </div>
-              
-              {user.agency_name && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                  <Building2 className="h-4 w-4" />
-                  <span className="line-clamp-2">{user.agency_name}</span>
-                </div>
-              )}
-              
-              <div className="space-y-2 pt-4 border-t border-border">
-                {user.email && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span className="truncate">{user.email}</span>
+            return (
+              <div key={user.id} className="glass-card p-6 group relative">
+                {canModifyUser(user) && (
+                  <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingUser(user)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeletingUser(user)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 )}
+
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-foreground font-semibold text-lg">
+                    {user.full_name?.split(" ").map((n) => n[0]).join("") || "?"}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
+                      user.role === "super_admin" ? "bg-destructive/15 text-destructive" :
+                      user.role === "admin" ? "bg-primary/15 text-primary" : "bg-accent text-accent-foreground"
+                    )}>
+                      <Shield className="h-3 w-3" />
+                      {t(`users.roles.${user.role || "agent"}`)}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-semibold font-display">{user.full_name || t("dashboard.noName")}</h3>
+                  {user.is_active ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                </div>
+                
+                {user.agency_name && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <Building2 className="h-4 w-4" />
+                    <span className="line-clamp-2">{user.agency_name}</span>
+                  </div>
+                )}
+
+                {/* Subscription status + renew button */}
+                {sub && (
+                  <div className="flex items-center gap-2 mb-4">
+                    <Badge
+                      variant={sub.status === "active" || sub.status === "trialing" ? "default" : "destructive"}
+                      className="capitalize text-xs"
+                    >
+                      {sub.plan_name} — {sub.status}
+                    </Badge>
+                    {canRenew && canModifyUser(user) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1.5 text-xs"
+                        onClick={() => handleRenewSubscription(user)}
+                        disabled={isRenewing}
+                      >
+                        {isRenewing ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-3 w-3" />
+                        )}
+                        Renouveler
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                <div className="space-y-2 pt-4 border-t border-border">
+                  {user.email && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4" />
+                      <span className="truncate">{user.email}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -165,7 +279,17 @@ export default function UsersManagement() {
         <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t("users.editUser")}</DialogTitle></DialogHeader>
           {editingUser && (
-            <EditUserForm user={editingUser} agencies={agencies || []} userAgencyIds={editingUser.agency_ids || []} onSubmit={handleUpdate} onCancel={() => setEditingUser(null)} isLoading={updateUser.isPending} />
+            <EditUserForm
+              user={editingUser}
+              agencies={agencies || []}
+              userAgencyIds={editingUser.agency_ids || []}
+              onSubmit={handleUpdate}
+              onCancel={() => setEditingUser(null)}
+              isLoading={updateUser.isPending}
+              subscription={getSubscriptionForUser(editingUser)}
+              onRenew={() => handleRenewSubscription(editingUser)}
+              isRenewing={renewingUserId === editingUser.user_id}
+            />
           )}
         </DialogContent>
       </Dialog>

@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { Check, X } from "lucide-react";
+import { Check, X, RotateCcw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,13 @@ interface User {
   agency_id: string | null;
 }
 
+interface SubscriptionInfo {
+  id: string;
+  status: string;
+  plan_name: string;
+  billing_interval: string;
+}
+
 interface EditUserFormProps {
   user: User;
   agencies: Agency[];
@@ -48,9 +55,12 @@ interface EditUserFormProps {
   onSubmit: (data: { full_name: string; email: string; is_active: boolean; agency_ids: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  subscription?: SubscriptionInfo | null;
+  onRenew?: () => Promise<void>;
+  isRenewing?: boolean;
 }
 
-export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel, isLoading }: EditUserFormProps) {
+export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel, isLoading, subscription, onRenew, isRenewing }: EditUserFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,6 +86,8 @@ export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel
   const handleFormSubmit = (data: FormData) => {
     onSubmit(data as { full_name: string; email: string; is_active: boolean; agency_ids: string[] });
   };
+
+  const canRenew = subscription && subscription.status !== "active" && subscription.status !== "trialing";
 
   return (
     <Form {...form}>
@@ -127,6 +139,43 @@ export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel
           )}
         />
 
+        {/* Subscription renewal section */}
+        {subscription && (
+          <div className="rounded-lg border p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">Abonnement</p>
+                <p className="text-xs text-muted-foreground">
+                  Plan : <span className="capitalize font-medium">{subscription.plan_name}</span> — Statut :{" "}
+                  <Badge
+                    variant={subscription.status === "active" || subscription.status === "trialing" ? "default" : "destructive"}
+                    className="capitalize text-xs"
+                  >
+                    {subscription.status}
+                  </Badge>
+                </p>
+              </div>
+              {canRenew && onRenew && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRenew}
+                  disabled={isRenewing}
+                  className="gap-2"
+                >
+                  {isRenewing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-4 w-4" />
+                  )}
+                  Renouveler
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         {isAdmin && (
           <FormField
             control={form.control}
@@ -135,7 +184,6 @@ export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel
               <FormItem>
                 <FormLabel>Agences gérées * (sélection multiple)</FormLabel>
                 <div className="space-y-2">
-                  {/* Selected agencies as badges */}
                   {selectedAgencyIds.length > 0 && (
                     <div className="flex flex-wrap gap-2 p-2 rounded-lg border border-border bg-muted/30">
                       {selectedAgencyIds.map((id) => {
@@ -160,7 +208,6 @@ export function EditUserForm({ user, agencies, userAgencyIds, onSubmit, onCancel
                     </div>
                   )}
                   
-                  {/* Agency list */}
                   <div className="border rounded-lg max-h-48 overflow-y-auto">
                     {agencies.length === 0 ? (
                       <div className="p-3 text-sm text-muted-foreground text-center">
